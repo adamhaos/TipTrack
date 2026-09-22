@@ -1,433 +1,180 @@
 import SwiftUI
 import SwiftData
+import UserNotifications
+import AppIntents
 
-// MARK: - 1. SwiftData Model
-@Model
-class Shift {
-    var date: Date
-    var creditTip: Double
-    var cashTip: Double
-    var barTipOut: Double
-    
-    var netCash: Double {
-        cashTip - barTipOut
-    }
-    
-    init(date: Date, creditTip: Double, cashTip: Double, barTipOut: Double = 0.0) {
-        self.date = date
-        self.creditTip = creditTip
-        self.cashTip = cashTip
-        self.barTipOut = barTipOut
-    }
-}
-
-// MARK: - 2. Shared Calendar Helper
-extension Calendar {
-    static var mondayStart: Calendar {
-        var cal = Calendar.current
-        cal.firstWeekday = 2 // 2 = Monday
-        return cal
-    }
-    
-    static var mondayToSundayRange: [Date] {
-        let today = Date()
-        var components = mondayStart.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
-        components.weekday = 2 // Start at Monday
-        
-        guard let monday = mondayStart.date(from: components) else { return [] }
-        
-        return (0...6).compactMap { dayOffset in
-            mondayStart.date(byAdding: .day, value: dayOffset, to: monday)
-        }
-    }
-}
-
-// MARK: - 3. Root View with 3 Tabs
-enum Tab {
-    case history
-    case logAndTotals
-    case weeklySchedule
-}
-
+// MARK: - Root View
 struct ContentView: View {
-    @State private var selectedTab: Tab = .logAndTotals
-    
-    var body: some View {
-        TabView(selection: $selectedTab) {
-            WeeklyHistoryView()
-                .tabItem {
-                    Label("History", systemImage: "clock.arrow.circlepath")
-                }
-                .tag(Tab.history)
-            
-            LogAndTotalsView()
-                .tabItem {
-                    Label("Log & Totals", systemImage: "dollarsign.circle.fill")
-                }
-                .tag(Tab.logAndTotals)
-            
-            WeeklyScheduleView()
-                .tabItem {
-                    Label("Weekly Schedule", systemImage: "calendar")
-                }
-                .tag(Tab.weeklySchedule)
-        }
-    }
-}
+    @Environment(\.modelContext) private var context
+    @Environment(\.scenePhase) private var scenePhase
+    @Query(filter: #Predicate<Shift> { $0.deletedAt == nil }, sort: \Shift.date) private var shifts: [Shift]
+    @Query(sort: \Job.name) private var jobs: [Job]
+    @AppStorage(FeatureKeys.appLock) private var appLock = false
+    @AppStorage(FeatureKeys.onboarding) private var gentleOnboarding = true
+    @AppStorage(FeatureKeys.theme) private var theme = TipTrackTheme.system.rawValue
+    @AppStorage(FeatureKeys.customAccent) private var customAccent = "#007AFF"
+    @AppStorage(FeatureKeys.spotlight) private var spotlightEnabled = true
+    @AppStorage(FeatureKeys.weekStart) private var weekStart = 2
+    // Widget intents run in the extension and can't post an in-process notification,
+    // so watch the shared key for routes written while the app is already active.
+    @AppStorage("tiptrack.pendingRoute", store: UserDefaults(suiteName: "group.atm.TipTrack"))
+    private var observedPendingRoute = ""
+    @State private var showOnboarding = false
 
-// MARK: - 4. Tab 1: Weekly History (2-Column Grid Card Layout)
-struct WeeklyHistoryView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Shift.date, order: .reverse) private var shifts: [Shift]
-    
-    @State private var showClearConfirmation = false
-    
-    private let columns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12)
-    ]
-    
-    private var weekDays: [Date] { Calendar.mondayToSundayRange }
-    
-    private var groupedWeeks: [(key: String, date: Date, shifts: [Shift])] {
-        let cal = Calendar.mondayStart
-        let grouped = Dictionary(grouping: shifts) { shift in
-            let comps = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: shift.date)
-            return "\(comps.yearForWeekOfYear ?? 0)-\(comps.weekOfYear ?? 0)"
-        }
-        
-        return grouped.map { key, weekShifts in
-            let firstDate = weekShifts.map(\.date).min() ?? Date()
-            var comps = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: firstDate)
-            comps.weekday = 2
-            let mondayDate = cal.date(from: comps) ?? firstDate
-            
-            return (key: key, date: mondayDate, shifts: weekShifts)
-        }.sorted { $0.date > $1.date }
-    }
-    
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                if groupedWeeks.isEmpty {
-                    ContentUnavailableView("No History Yet", systemImage: "tray", description: Text("Logged shifts will be automatically grouped by week here."))
-                        .padding(.top, 40)
-                } else {
-                    LazyVGrid(columns: columns, spacing: 12) {
-                        ForEach(groupedWeeks, id: \.key) { week in
-                            let creditTotal = week.shifts.reduce(0) { $0 + $1.creditTip }
-                            let netCashTotal = week.shifts.reduce(0) { $0 + $1.netCash }
-                            let barTipOutTotal = week.shifts.reduce(0) { $0 + $1.barTipOut }
-                            
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("Week of")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                                    .bold()
-                                
-                                Text(week.date.formatted(.dateTime.month(.wide).day().year()))
-                                    .font(.subheadline)
-                                    .bold()
-                                
-                                Divider()
-                                
-                                VStack(alignment: .leading, spacing: 6) {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("Credit:")
-                                            .font(.caption2)
-                                            .foregroundColor(.secondary)
-                                        Text(creditTotal, format: .currency(code: "USD"))
-                                            .font(.headline)
-                                            .foregroundColor(.blue)
-                                    }
-                                    
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("Net Cash:")
-                                            .font(.caption2)
-                                            .foregroundColor(.secondary)
-                                        Text(netCashTotal, format: .currency(code: "USD"))
-                                            .font(.headline)
-                                            .foregroundColor(.green)
-                                    }
-                                }
-                                
-                                if barTipOutTotal > 0 {
-                                    Text("Bar Out: \(barTipOutTotal, format: .currency(code: "USD"))")
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            .padding(14)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color(UIColor.secondarySystemBackground))
-                            .cornerRadius(16)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                }
-            }
-            .navigationTitle("Weekly History")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    clearButton
-                }
-            }
-            .confirmationDialog("Clear Shifts", isPresented: $showClearConfirmation, titleVisibility: .visible) {
-                Button("Clear Current Week Only", role: .destructive, action: clearCurrentWeekShifts)
-                Button("Clear All Time Data", role: .destructive, action: clearAllShifts)
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("Select whether to clear shifts for this week only or purge all recorded data.")
-            }
-        }
-    }
-    
-    private var clearButton: some View {
-        Button(role: .destructive) {
-            showClearConfirmation = true
-        } label: {
-            Image(systemName: "trash")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(.red)
-                .padding(10)
-                .background(.ultraThinMaterial, in: Circle())
-                .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 2)
-        }
-    }
-    
-    private func clearCurrentWeekShifts() {
-        let currentWeekShifts = shifts.filter { shift in
-            weekDays.contains { Calendar.mondayStart.isDate(shift.date, inSameDayAs: $0) }
-        }
-        for shift in currentWeekShifts {
-            modelContext.delete(shift)
-        }
-        try? modelContext.save()
-    }
-    
-    private func clearAllShifts() {
+    private var widgetSnapshotSignature: [WidgetShiftSnapshot] {
+        var snapshots: [WidgetShiftSnapshot] = []
+        snapshots.reserveCapacity(shifts.count)
         for shift in shifts {
-            modelContext.delete(shift)
+            snapshots.append(WidgetShiftSnapshot(shift: shift))
         }
-        try? modelContext.save()
+        return snapshots
     }
-}
 
-// MARK: - 5. Tab 2: Log & Totals (No Trash Can, Dynamic Save Button, Compact Layout)
-struct LogAndTotalsView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Shift.date, order: .forward) private var shifts: [Shift]
-    
-    @State private var selectedDate = Date()
-    @State private var creditInput: String = ""
-    @State private var cashInput: String = ""
-    @State private var barTipOutInput: String = ""
-    
-    @FocusState private var isInputFocused: Bool
-    
-    private var weekDays: [Date] { Calendar.mondayToSundayRange }
-    
-    private var weeklyCreditTotal: Double {
-        shifts.filter { shift in
-            weekDays.contains { Calendar.mondayStart.isDate(shift.date, inSameDayAs: $0) }
-        }.reduce(0) { $0 + $1.creditTip }
+    private struct SpotlightSignature: Hashable {
+        let enabled: Bool
+        let jobs: [String]
+        let shifts: [WidgetShiftSnapshot]
     }
-    
-    private var weeklyNetCashTotal: Double {
-        shifts.filter { shift in
-            weekDays.contains { Calendar.mondayStart.isDate(shift.date, inSameDayAs: $0) }
-        }.reduce(0) { $0 + $1.netCash }
+
+    private var spotlightSignature: SpotlightSignature {
+        SpotlightSignature(enabled: spotlightEnabled,
+            jobs: jobs.map { "\($0.id)|\($0.name)" }, shifts: widgetSnapshotSignature)
     }
-    
-    // Checks if at least one entry field has valid input (> 0)
-    private var isFormHasData: Bool {
-        (Double(creditInput) ?? 0.0 > 0) ||
-        (Double(cashInput) ?? 0.0 > 0) ||
-        (Double(barTipOutInput) ?? 0.0 > 0)
-    }
-    
-    // Dynamic text for Save Button showing date
-    private var saveButtonText: String {
-        let formattedDate = selectedDate.formatted(.dateTime.month().day())
-        return "Save Shift for \(formattedDate)"
-    }
-    
+
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 18) {
-                totalsSummaryView
-                
-                Divider()
-                
-                shiftEntryFormView
-                
-                Spacer()
+        ZStack {
+            LogAndTotalsView()
+            if appLock && !PrivacyManager.shared.unlocked {
+                AppLockView().transition(.opacity).zIndex(20)
             }
-            .padding(.top, 8)
-            .padding(.top, 8)
-            .navigationTitle("Tip Tracker")
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("Done") {
-                        isInputFocused = false
+        }
+            .preferredColorScheme(preferredColorScheme)
+            .tint(themeAccent)
+            .toggleStyle(InstantSwitchToggleStyle())
+            .environment(\.tipTrackColorful, TipTrackTheme(rawValue: theme) == .colorful)
+            .task {
+                TipTrackShortcuts.updateAppShortcutParameters()
+                handlePendingWidgetRoute()
+                UNUserNotificationCenter.current().delegate = AppRoute.shared
+                WidgetSnapshotWriter.publish(shifts: shifts)
+                await ScheduleStore.shared.refresh(context: context)
+                if gentleOnboarding && !UserDefaults.standard.bool(forKey: "onboarding.completed") {
+                    UserDefaults.standard.set(true, forKey: "onboarding.completed")
+                    showOnboarding = true
+                }
+            }
+            .task(id: spotlightSignature) {
+                // Debounce so a burst of edits reindexes once.
+                guard (try? await Task.sleep(for: .seconds(2))) != nil else { return }
+                await TipTrackSpotlightIndexer.update(jobs: jobs, shifts: shifts)
+            }
+            .task(id: widgetSnapshotSignature) {
+                // Rewriting the full backup CSV is costly; wait for edits to settle.
+                guard (try? await Task.sleep(for: .seconds(2))) != nil else { return }
+                AutomaticBackupManager.runIfNeeded(shifts: shifts)
+            }
+            .onChange(of: widgetSnapshotSignature) {
+                WidgetSnapshotWriter.publish(snapshotShifts: widgetSnapshotSignature)
+                WatchSyncService.shared.publish()
+                Task { await ScheduleStore.shared.scheduleReminders(context: context) }
+            }
+            .onChange(of: ScheduleStore.shared.events) {
+                WatchSyncService.shared.publish()
+            }
+            .onChange(of: weekStart) {
+                WidgetSnapshotWriter.publish(shifts: shifts)
+                WatchSyncService.shared.publish()
+            }
+            .onChange(of: PrivacyManager.shared.enabled) {
+                WidgetSnapshotWriter.publish(shifts: shifts)
+                WatchSyncService.shared.publish()
+            }
+            .onChange(of: jobs.map { "\($0.id.uuidString)|\($0.name)|\($0.colorHex)|\($0.isDefault)" }) {
+                TipTrackShortcuts.updateAppShortcutParameters()
+                WatchSyncService.shared.publish()
+            }
+            .onChange(of: PrivacyManager.shared.unlocked) {
+                if PrivacyManager.shared.unlocked {
+                    handlePendingWidgetRoute()
+                    TipTrackShortcuts.updateAppShortcutParameters()
+                }
+            }
+            .onChange(of: scenePhase) {
+                if scenePhase == .active {
+                    handlePendingWidgetRoute()
+                    Task {
+                        await ScheduleStore.shared.refresh(context: context)
+                        LiveShiftManager.shared.reloadSharedState()
                     }
-                    .font(.headline)
-                    .padding(.bottom, 10) // Raised slightly higher above number pad
+                } else if scenePhase == .background {
+                    PrivacyManager.shared.unlocked = false
                 }
             }
-        }
-    }
-    
-    private var totalsSummaryView: some View {
-        VStack(spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Weekly Credit Paycheck (Pre Tax):")
-                        .font(.subheadline)
-                        .bold()
-                        .foregroundColor(.blue)
-                    Text(weeklyCreditTotal, format: .currency(code: "USD"))
-                        .font(.system(size: 50, weight: .bold, design: .rounded))
-                        .minimumScaleFactor(0.9)
-                }
-                Spacer()
+            .onOpenURL(perform: routeWidgetURL)
+            .onReceive(NotificationCenter.default.publisher(for: .tipTrackIntentRoute)) { _ in
+                handlePendingWidgetRoute()
             }
-            .padding(.vertical, 16)
-            .padding(.horizontal, 20)
-            .background(Color.blue.opacity(0.12))
-            .cornerRadius(18)
-            
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Weekly Cash Paycheck (Net):")
-                        .font(.subheadline)
-                        .bold()
-                        .foregroundColor(.green)
-                    Text(weeklyNetCashTotal, format: .currency(code: "USD"))
-                        .font(.system(size: 42, weight: .bold, design: .rounded))
-                        .minimumScaleFactor(0.8)
-                }
-                Spacer()
+            .onChange(of: observedPendingRoute) {
+                // A locked app re-stores the route until unlock; don't loop on that write.
+                guard !observedPendingRoute.isEmpty, !appLock || PrivacyManager.shared.unlocked else { return }
+                handlePendingWidgetRoute()
             }
-            .padding(.vertical, 16)
-            .padding(.horizontal, 20)
-            .background(Color.green.opacity(0.12))
-            .cornerRadius(18)
-        }
-        .padding(.horizontal)
-    }
-    
-    private var shiftEntryFormView: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("Log Shift Income")
-                .font(.headline)
-            
-            DatePicker("Shift Date", selection: $selectedDate, displayedComponents: .date)
-                .datePickerStyle(.compact)
-            
-            TextField("Credit Tips ($)", text: $creditInput)
-                .keyboardType(.decimalPad)
-                .textFieldStyle(.roundedBorder)
-                .focused($isInputFocused)
-            
-            TextField("Cash Tips ($)", text: $cashInput)
-                .keyboardType(.decimalPad)
-                .textFieldStyle(.roundedBorder)
-                .focused($isInputFocused)
-            
-            TextField("Bar Tip Out ($)", text: $barTipOutInput)
-                .keyboardType(.decimalPad)
-                .textFieldStyle(.roundedBorder)
-                .focused($isInputFocused)
-            
-            Button(action: saveShift) {
-                Text(saveButtonText)
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(isFormHasData ? Color.green : Color.black) // Turns green when data is entered
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
+            .sheet(isPresented: $showOnboarding) {
+                GentleOnboardingView()
             }
-            .animation(.easeInOut(duration: 0.2), value: isFormHasData)
-        }
-        .padding(.horizontal)
     }
-    
-    private func saveShift() {
-        let credit = Double(creditInput) ?? 0.0
-        let cash = Double(cashInput) ?? 0.0
-        let tipOut = Double(barTipOutInput) ?? 0.0
-        
-        if credit > 0 || cash > 0 || tipOut > 0 {
-            let newShift = Shift(date: selectedDate, creditTip: credit, cashTip: cash, barTipOut: tipOut)
-            modelContext.insert(newShift)
-            
-            try? modelContext.save()
-            
-            creditInput = ""
-            cashInput = ""
-            barTipOutInput = ""
-            isInputFocused = false
-        }
-    }
-}
 
-// MARK: - 6. Tab 3: Weekly Schedule
-struct WeeklyScheduleView: View {
-    @Query(sort: \Shift.date, order: .forward) private var shifts: [Shift]
-    
-    private var weekDays: [Date] { Calendar.mondayToSundayRange }
-    
-    var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Monday to Sunday Breakdown")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal)
-                
-                VStack(spacing: 8) {
-                    ForEach(weekDays, id: \.self) { day in
-                        let dailyShifts = shifts.filter { Calendar.mondayStart.isDate($0.date, inSameDayAs: day) }
-                        let dailyCredit = dailyShifts.reduce(0) { $0 + $1.creditTip }
-                        let dailyNetCash = dailyShifts.reduce(0) { $0 + $1.netCash }
-                        
-                        HStack {
-                            Text(day.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))
-                                .font(.subheadline)
-                                .bold()
-                            
-                            Spacer()
-                            
-                            VStack(alignment: .trailing, spacing: 2) {
-                                Text("Credit: \(dailyCredit, format: .currency(code: "USD"))")
-                                    .font(.caption)
-                                    .bold()
-                                    .foregroundColor(.blue)
-                                Text("Net Cash: \(dailyNetCash, format: .currency(code: "USD"))")
-                                    .font(.caption)
-                                    .bold()
-                                    .foregroundColor(.green)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color(UIColor.secondarySystemBackground))
-                        .cornerRadius(12)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 6)
-            }
-            .navigationTitle("Weekly Schedule")
+    private func handlePendingWidgetRoute() {
+        let defaults = UserDefaults(suiteName: "group.atm.TipTrack")
+        let route = defaults?.string(forKey: "tiptrack.pendingRoute") ?? ""
+        guard !route.isEmpty else { return }
+        defaults?.removeObject(forKey: "tiptrack.pendingRoute")
+        openRoute(route)
+    }
+
+    private func routeWidgetURL(_ url: URL) {
+        guard url.scheme == "tiptrack",
+              let route = url.host,
+              ["log", "history", "calendar", "start", "stop"].contains(route) else { return }
+        openRoute(route)
+    }
+
+    private func openRoute(_ route: String) {
+        if appLock && !PrivacyManager.shared.unlocked {
+            UserDefaults(suiteName: "group.atm.TipTrack")?.set(route, forKey: "tiptrack.pendingRoute")
+            return
+        }
+        switch route {
+        case "log": AppRoute.shared.openLog()
+        case "history": AppRoute.shared.openHistory()
+        case "calendar": AppRoute.shared.openCalendar()
+        case "start": AppRoute.shared.openTimerStart()
+        case "stop": AppRoute.shared.openTimerStop()
+        default: break
         }
     }
-}
 
-#Preview {
-    ContentView()
-        .modelContainer(for: Shift.self, inMemory: true)
+    private var themeAccent: Color {
+        switch TipTrackTheme(rawValue: theme) ?? .system {
+        case .neutral: .gray
+        case .colorful: .purple
+        case .ocean: .cyan
+        case .sunset: .orange
+        case .forest: .green
+        case .custom: Color(hex: customAccent)
+        case .dark: .mint
+        case .light: .blue
+        case .highContrast: .primary
+        case .jobColor: jobs.first(where: \.isDefault).map { Color(hex: $0.colorHex) } ?? .blue
+        case .system: .blue
+        }
+    }
+
+    private var preferredColorScheme: ColorScheme? {
+        switch TipTrackTheme(rawValue: theme) ?? .system {
+        case .dark: .dark
+        case .light: .light
+        default: nil
+        }
+    }
 }

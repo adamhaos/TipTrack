@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>atm.TipTrack.scheduleRefresh</string>
+	</array>
+	<key>CFBundleSpokenName</key>
+	<string>Tip Tracker</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>atm.TipTrack</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>tiptrack</string>
+			</array>
+		</dict>
+	</array>
+	<key>INAlternativeAppNames</key>
+	<array>
+		<dict>
+			<key>INAlternativeAppName</key>
+			<string>Tip Tracker</string>
+			<key>INAlternativeAppNamePronunciationHint</key>
+			<string>tip tracker</string>
+		</dict>
+		<dict>
+			<key>INAlternativeAppName</key>
+			<string>TipTrack</string>
+			<key>INAlternativeAppNamePronunciationHint</key>
+			<string>tip track</string>
+		</dict>
+	</array>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeAdd</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Log Shift</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>atm.TipTrack.log</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeTime</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>View History</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>atm.TipTrack.history</string>
+		</dict>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
+</dict>
+</plist>

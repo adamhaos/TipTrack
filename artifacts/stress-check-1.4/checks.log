@@ -1,0 +1,4 @@
+Siri checks passed: periods, week preferences, DST, hourly averages, privacy gates, and input validation.
+Release checks passed: CSV round trips, duplicate protection, invalid amounts, hourly pay, localized entry, and recurring schedules.
+Receipt parser checks passed: checkout fields, preferred labels, continuation lines, decimal commas, and missing values.
+Navigation checks passed: month-end selection, leap years, DST, busy-day paging, and duplicate dashboard preferences.

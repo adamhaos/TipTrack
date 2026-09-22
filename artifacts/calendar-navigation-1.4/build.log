@@ -1,0 +1,440 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project TipTrack.xcodeproj -scheme TipTrack -configuration Debug -destination id=EFEEDB6E-04C7-4176-9991-CB6AD5B9E8E0 -derivedDataPath /tmp/TipTrack-1.4-build build
+
+2026-10-09 11:57:31.370 xcodebuild[7692:78124] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (3 targets)
+    Target 'TipTrack' in project 'TipTrack'
+        ➜ Explicit dependency on target 'TipTrackWidgets' in project 'TipTrack'
+        ➜ Explicit dependency on target 'TipTrackControls' in project 'TipTrack'
+    Target 'TipTrackControls' in project 'TipTrack' (no dependencies)
+    Target 'TipTrackWidgets' in project 'TipTrack' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/atm/xcode/TipTrack/TipTrack/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: 4f4ce7b1d7d5e5dc500744b30aadf2e8
+Build description path: /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/XCBuildData/4f4ce7b1d7d5e5dc500744b30aadf2e8.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk /tmp/TipTrack-1.4-build/SDKStatCaches.noindex/iphonesimulator27.0-24A430-8dc58220667be655e1bcc261a7455254.sdkstatcache
+    cd /Users/atm/xcode/TipTrack/TipTrack.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -o /tmp/TipTrack-1.4-build/SDKStatCaches.noindex/iphonesimulator27.0-24A430-8dc58220667be655e1bcc261a7455254.sdkstatcache
+
+WriteAuxiliaryFile /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/DerivedSources/Entitlements-Simulated.plist (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    write-file /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/DerivedSources/Entitlements-Simulated.plist
+
+MkDir /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /bin/mkdir -p /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex
+
+WriteAuxiliaryFile /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/DerivedSources/Entitlements-Simulated.plist (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    write-file /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/DerivedSources/Entitlements-Simulated.plist
+
+WriteAuxiliaryFile /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/DerivedSources/Entitlements-Simulated.plist (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    write-file /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/DerivedSources/Entitlements-Simulated.plist
+
+MkDir /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /bin/mkdir -p /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex
+
+ProcessProductPackaging /Users/atm/xcode/TipTrack/TipTrackWidgets/TipTrackWidgets.entitlements /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex.xcent (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Entitlements:
+    
+    {
+}
+    
+    builtin-productPackagingUtility /Users/atm/xcode/TipTrack/TipTrackWidgets/TipTrackWidgets.entitlements -entitlements -format xml -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex.xcent
+
+ProcessProductPackaging /Users/atm/xcode/TipTrack/TipTrackControls/TipTrackControls.entitlements /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex.xcent (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Entitlements:
+    
+    {
+}
+    
+    builtin-productPackagingUtility /Users/atm/xcode/TipTrack/TipTrackControls/TipTrackControls.entitlements -entitlements -format xml -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex.xcent
+
+ProcessProductPackaging /Users/atm/xcode/TipTrack/TipTrackControls/TipTrackControls.entitlements /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex-Simulated.xcent (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Entitlements:
+    
+    {
+    "application-identifier" = "ZCW4C29TGM.atm.TipTrack.controls";
+    "com.apple.security.application-groups" =     (
+        "group.atm.TipTrack"
+    );
+}
+    
+    builtin-productPackagingUtility /Users/atm/xcode/TipTrack/TipTrackControls/TipTrackControls.entitlements -entitlements -format xml -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex-Simulated.xcent
+
+ProcessProductPackaging /Users/atm/xcode/TipTrack/TipTrackWidgets/TipTrackWidgets.entitlements /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex-Simulated.xcent (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Entitlements:
+    
+    {
+    "application-identifier" = "ZCW4C29TGM.atm.TipTrack.widgets";
+    "com.apple.security.application-groups" =     (
+        "group.atm.TipTrack"
+    );
+}
+    
+    builtin-productPackagingUtility /Users/atm/xcode/TipTrack/TipTrackWidgets/TipTrackWidgets.entitlements -entitlements -format xml -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex-Simulated.xcent
+
+ProcessProductPackagingDER /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex.xcent /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex.xcent.der (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /usr/bin/derq query -f xml -i /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex.xcent -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex.xcent.der --raw
+
+ProcessProductPackagingDER /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex.xcent /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex.xcent.der (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /usr/bin/derq query -f xml -i /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex.xcent -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex.xcent.der --raw
+
+ProcessProductPackagingDER /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex-Simulated.xcent /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex-Simulated.xcent.der (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /usr/bin/derq query -f xml -i /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex-Simulated.xcent -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex-Simulated.xcent.der --raw
+
+ProcessProductPackagingDER /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex-Simulated.xcent /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex-Simulated.xcent.der (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /usr/bin/derq query -f xml -i /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex-Simulated.xcent -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex-Simulated.xcent.der --raw
+
+Ld /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/__preview.dylib normal (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -O0 -Xlinker -no_warn_duplicate_libraries -L/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -F/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -install_name @rpath/TipTrackWidgets.debug.dylib -Xlinker -dead_strip -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets_dependency_info.dat -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __entitlements -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex-Simulated.xcent -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __ents_der -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex-Simulated.xcent.der -Xlinker -no_adhoc_codesign -o /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/__preview.dylib
+
+Ld /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/__preview.dylib normal (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios18.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -O0 -Xlinker -no_warn_duplicate_libraries -L/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -F/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -install_name @rpath/TipTrackControls.debug.dylib -Xlinker -dead_strip -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls_dependency_info.dat -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __entitlements -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex-Simulated.xcent -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __ents_der -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex-Simulated.xcent.der -Xlinker -no_adhoc_codesign -o /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/__preview.dylib
+
+ProcessInfoPlistFile /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/Info.plist /Users/atm/xcode/TipTrack/TipTrackWidgets/Info.plist (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-infoPlistUtility /Users/atm/xcode/TipTrack/TipTrackWidgets/Info.plist -producttype com.apple.product-type.app-extension -expandbuildsettings -format binary -platform iphonesimulator -o /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/Info.plist
+
+ProcessInfoPlistFile /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/Info.plist /Users/atm/xcode/TipTrack/TipTrackControls/Info.plist (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-infoPlistUtility /Users/atm/xcode/TipTrack/TipTrackControls/Info.plist -producttype com.apple.product-type.app-extension -expandbuildsettings -format binary -platform iphonesimulator -o /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/Info.plist
+
+Copy /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.swiftmodule/arm64-apple-ios-simulator.swiftmodule /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets.swiftmodule (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets.swiftmodule /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.swiftmodule/arm64-apple-ios-simulator.swiftmodule
+
+Copy /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.swiftmodule/arm64-apple-ios-simulator.swiftdoc /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets.swiftdoc (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets.swiftdoc /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.swiftmodule/arm64-apple-ios-simulator.swiftdoc
+
+Copy /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.swiftmodule/arm64-apple-ios-simulator.abi.json /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets.abi.json (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets.abi.json /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.swiftmodule/arm64-apple-ios-simulator.abi.json
+
+SwiftMergeGeneratedHeaders /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/DerivedSources/TipTrackWidgets-Swift.h /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets-Swift.h (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-swiftHeaderTool -arch arm64 /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets-Swift.h -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/DerivedSources/TipTrackWidgets-Swift.h
+
+Copy /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets.swiftsourceinfo (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets.swiftsourceinfo /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo
+
+SwiftMergeGeneratedHeaders /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/DerivedSources/TipTrackControls-Swift.h /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls-Swift.h (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-swiftHeaderTool -arch arm64 /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls-Swift.h -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/DerivedSources/TipTrackControls-Swift.h
+
+Copy /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.swiftmodule/arm64-apple-ios-simulator.swiftdoc /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls.swiftdoc (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls.swiftdoc /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.swiftmodule/arm64-apple-ios-simulator.swiftdoc
+
+Copy /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.swiftmodule/arm64-apple-ios-simulator.swiftmodule /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls.swiftmodule (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls.swiftmodule /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.swiftmodule/arm64-apple-ios-simulator.swiftmodule
+
+Copy /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.swiftmodule/arm64-apple-ios-simulator.abi.json /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls.abi.json (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls.abi.json /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.swiftmodule/arm64-apple-ios-simulator.abi.json
+
+Copy /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls.swiftsourceinfo (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls.swiftsourceinfo /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo
+
+Ld /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/TipTrackWidgets.debug.dylib normal (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -O0 -Xlinker -no_warn_duplicate_libraries -L/tmp/TipTrack-1.4-build/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -L/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -F/tmp/TipTrack-1.4-build/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -filelist /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets.LinkFileList -install_name @rpath/TipTrackWidgets.debug.dylib -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -rpath -Xlinker @executable_path/Frameworks -Xlinker -rpath -Xlinker @executable_path/../../Frameworks -Xlinker -dead_strip -Xlinker -object_path_lto -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets_dependency_info.dat -fapplication-extension -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets.swiftmodule -Xlinker -alias -Xlinker _NSExtensionMain -Xlinker ___debug_main_executable_dylib_entry_point -Xlinker -no_adhoc_codesign -o /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/TipTrackWidgets.debug.dylib
+
+Ld /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/TipTrackControls.debug.dylib normal (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios18.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -O0 -Xlinker -no_warn_duplicate_libraries -L/tmp/TipTrack-1.4-build/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -L/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -F/tmp/TipTrack-1.4-build/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -filelist /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls.LinkFileList -install_name @rpath/TipTrackControls.debug.dylib -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -rpath -Xlinker @executable_path/Frameworks -Xlinker -rpath -Xlinker @executable_path/../../Frameworks -Xlinker -dead_strip -Xlinker -object_path_lto -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls_dependency_info.dat -fapplication-extension -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls.swiftmodule -Xlinker -alias -Xlinker _NSExtensionMain -Xlinker ___debug_main_executable_dylib_entry_point -Xlinker -no_adhoc_codesign -o /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/TipTrackControls.debug.dylib
+
+ProcessProductPackaging /Users/atm/xcode/TipTrack/TipTrack/TipTrack.entitlements /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app-Simulated.xcent (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Entitlements:
+    
+    {
+    "application-identifier" = "ZCW4C29TGM.atm.TipTrack";
+    "aps-environment" = development;
+    "com.apple.developer.icloud-container-identifiers" =     (
+        "iCloud.atm.TipTrack"
+    );
+    "com.apple.developer.icloud-services" =     (
+        CloudKit
+    );
+    "com.apple.developer.usernotifications.time-sensitive" = 1;
+    "com.apple.security.application-groups" =     (
+        "group.atm.TipTrack"
+    );
+}
+    
+    builtin-productPackagingUtility /Users/atm/xcode/TipTrack/TipTrack/TipTrack.entitlements -entitlements -format xml -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app-Simulated.xcent
+
+ProcessProductPackaging /Users/atm/xcode/TipTrack/TipTrack/TipTrack.entitlements /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app.xcent (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Entitlements:
+    
+    {
+}
+    
+    builtin-productPackagingUtility /Users/atm/xcode/TipTrack/TipTrack/TipTrack.entitlements -entitlements -format xml -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app.xcent
+
+ProcessProductPackagingDER /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app.xcent /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app.xcent.der (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /usr/bin/derq query -f xml -i /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app.xcent -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app.xcent.der --raw
+
+ProcessProductPackagingDER /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app-Simulated.xcent /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app-Simulated.xcent.der (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /usr/bin/derq query -f xml -i /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app-Simulated.xcent -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app-Simulated.xcent.der --raw
+
+SwiftMergeGeneratedHeaders /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/DerivedSources/TipTrack-Swift.h /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack-Swift.h (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-swiftHeaderTool -arch arm64 /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack-Swift.h -o /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/DerivedSources/TipTrack-Swift.h
+
+Copy /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.swiftmodule/arm64-apple-ios-simulator.swiftdoc /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack.swiftdoc (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack.swiftdoc /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.swiftmodule/arm64-apple-ios-simulator.swiftdoc
+
+Copy /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.swiftmodule/arm64-apple-ios-simulator.abi.json /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack.abi.json (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack.abi.json /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.swiftmodule/arm64-apple-ios-simulator.abi.json
+
+Copy /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.swiftmodule/arm64-apple-ios-simulator.swiftmodule /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack.swiftmodule (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack.swiftmodule /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.swiftmodule/arm64-apple-ios-simulator.swiftmodule
+
+Copy /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack.swiftsourceinfo (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack.swiftsourceinfo /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo
+
+CompileAssetCatalogVariant thinned /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app /Users/atm/xcode/TipTrack/TipTrack/Assets.xcassets (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/usr/bin/actool /Users/atm/xcode/TipTrack/TipTrack/Assets.xcassets --compile /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_output/thinned --output-format human-readable-text --notices --warnings --export-dependency-info /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_dependencies_thinned --output-partial-info-plist /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_generated_info.plist_thinned --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --filter-for-thinning-device-configuration iPhone17,1 --filter-for-device-os-version 27.0 --development-region en --target-device iphone --minimum-deployment-target 17.0 --platform iphonesimulator
+/* com.apple.actool.compilation-results */
+/tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_generated_info.plist_thinned
+/tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_output/thinned/AppIcon60x60@2x.png
+/tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_output/thinned/AppIcon76x76@2x~ipad.png
+/tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_output/thinned/Assets.car
+
+
+ConstructStubExecutorLinkFileList /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets-ExecutorLinkFileList-normal-arm64.txt (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    construct-stub-executor-link-file-list /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/TipTrackWidgets.debug.dylib /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets-ExecutorLinkFileList-normal-arm64.txt
+note: Using stub executor library with Swift entry point. (in target 'TipTrackWidgets' from project 'TipTrack')
+
+Ld /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/TipTrackWidgets normal (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -O0 -Xlinker -no_warn_duplicate_libraries -L/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -F/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -Xlinker -rpath -Xlinker @executable_path -Xlinker -rpath -Xlinker @executable_path/Frameworks -Xlinker -rpath -Xlinker @executable_path/../../Frameworks -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -e ___debug_blank_executor_main -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_dylib -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets-DebugDylibPath-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_entry -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets-DebugEntryPoint-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_instlnm -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets-DebugDylibInstallName-normal-arm64.txt -Xlinker -filelist -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets-ExecutorLinkFileList-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __entitlements -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex-Simulated.xcent -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __ents_der -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex-Simulated.xcent.der /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/TipTrackWidgets.debug.dylib -Xlinker -no_adhoc_codesign -o /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/TipTrackWidgets
+
+ConstructStubExecutorLinkFileList /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls-ExecutorLinkFileList-normal-arm64.txt (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    construct-stub-executor-link-file-list /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/TipTrackControls.debug.dylib /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls-ExecutorLinkFileList-normal-arm64.txt
+note: Using stub executor library with Swift entry point. (in target 'TipTrackControls' from project 'TipTrack')
+
+Ld /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/TipTrackControls normal (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios18.0-simulator -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -O0 -Xlinker -no_warn_duplicate_libraries -L/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -F/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -Xlinker -rpath -Xlinker @executable_path -Xlinker -rpath -Xlinker @executable_path/Frameworks -Xlinker -rpath -Xlinker @executable_path/../../Frameworks -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -e ___debug_blank_executor_main -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_dylib -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls-DebugDylibPath-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_entry -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls-DebugEntryPoint-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_instlnm -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls-DebugDylibInstallName-normal-arm64.txt -Xlinker -filelist -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls-ExecutorLinkFileList-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __entitlements -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex-Simulated.xcent -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __ents_der -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex-Simulated.xcent.der /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/TipTrackControls.debug.dylib -Xlinker -no_adhoc_codesign -o /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/TipTrackControls
+
+ExtractAppIntentsMetadata (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name TipTrackWidgets --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk --xcode-version 27A266a --platform-family iOS --deployment-target 17.0 --bundle-identifier atm.TipTrack.widgets --output /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex --target-triple arm64-apple-ios17.0-simulator --binary-file /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/TipTrackWidgets --dependency-file /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets_dependency_info.dat --stringsdata-file /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets.SwiftFileList --metadata-file-list /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.DependencyMetadataFileList --static-metadata-file-list /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.DependencyStaticMetadataFileList --swift-const-vals-list /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/Objects-normal/arm64/TipTrackWidgets.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --no-app-shortcuts-localization
+2026-10-09 11:57:32.444 appintentsmetadataprocessor[7726:78360] Starting appintentsmetadataprocessor export
+2026-10-09 11:57:32.493 appintentsmetadataprocessor[7726:78360] Writing Metadata.appintents
+2026-10-09 11:57:32.493 appintentsmetadataprocessor[7726:78360] Metadata root: /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/Metadata.appintents
+
+ExtractAppIntentsMetadata (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name TipTrackControls --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk --xcode-version 27A266a --platform-family iOS --deployment-target 18.0 --bundle-identifier atm.TipTrack.controls --output /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex --target-triple arm64-apple-ios18.0-simulator --binary-file /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/TipTrackControls --dependency-file /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls_dependency_info.dat --stringsdata-file /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls.SwiftFileList --metadata-file-list /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.DependencyMetadataFileList --static-metadata-file-list /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.DependencyStaticMetadataFileList --swift-const-vals-list /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/Objects-normal/arm64/TipTrackControls.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --no-app-shortcuts-localization
+2026-10-09 11:57:32.447 appintentsmetadataprocessor[7727:78361] Starting appintentsmetadataprocessor export
+2026-10-09 11:57:32.482 appintentsmetadataprocessor[7727:78361] Extracted no relevant App Intents symbols, skipping writing output
+
+CodeSign /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/TipTrackControls.debug.dylib (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/TipTrackControls.debug.dylib
+
+CodeSign /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/TipTrackWidgets.debug.dylib (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/TipTrackWidgets.debug.dylib
+
+CodeSign /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/__preview.dylib (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex/__preview.dylib
+
+CodeSign /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/__preview.dylib (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex/__preview.dylib
+
+CodeSign /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --entitlements /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackControls.build/TipTrackControls.appex.xcent --timestamp\=none --generate-entitlement-der /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex
+
+CodeSign /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --entitlements /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrackWidgets.build/TipTrackWidgets.appex.xcent --timestamp\=none --generate-entitlement-der /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex
+
+RegisterExecutionPolicyException /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-RegisterExecutionPolicyException /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex
+
+Touch /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex (in target 'TipTrackControls' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /usr/bin/touch -c /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex
+
+RegisterExecutionPolicyException /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-RegisterExecutionPolicyException /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex
+
+Touch /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex (in target 'TipTrackWidgets' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /usr/bin/touch -c /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex
+
+Ld /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/__preview.dylib normal (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -O0 -Xlinker -no_warn_duplicate_libraries -L/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -F/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -install_name @rpath/TipTrack.debug.dylib -Xlinker -dead_strip -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack_dependency_info.dat -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __entitlements -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app-Simulated.xcent -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __ents_der -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app-Simulated.xcent.der -Xlinker -no_adhoc_codesign -o /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/__preview.dylib
+
+Ld /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/TipTrack.debug.dylib normal (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -O0 -Xlinker -no_warn_duplicate_libraries -L/tmp/TipTrack-1.4-build/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -L/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -F/tmp/TipTrack-1.4-build/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -filelist /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack.LinkFileList -install_name @rpath/TipTrack.debug.dylib -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -rpath -Xlinker @executable_path/Frameworks -Xlinker -dead_strip -Xlinker -object_path_lto -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack.swiftmodule -Xlinker -alias -Xlinker _main -Xlinker ___debug_main_executable_dylib_entry_point -Xlinker -no_adhoc_codesign -o /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/TipTrack.debug.dylib
+
+LinkAssetCatalog /Users/atm/xcode/TipTrack/TipTrack/Assets.xcassets (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-linkAssetCatalog --thinned /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_output/thinned --thinned-dependencies /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_dependencies_thinned --thinned-info-plist-content /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_generated_info.plist_thinned --unthinned /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_output/unthinned --unthinned-dependencies /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_dependencies_unthinned --unthinned-info-plist-content /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_generated_info.plist_unthinned --output /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app --plist-output /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_generated_info.plist
+note: Emplaced /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/Assets.car (in target 'TipTrack' from project 'TipTrack')
+note: Emplaced /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/AppIcon60x60@2x.png (in target 'TipTrack' from project 'TipTrack')
+note: Emplaced /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/AppIcon76x76@2x~ipad.png (in target 'TipTrack' from project 'TipTrack')
+
+ConstructStubExecutorLinkFileList /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack-ExecutorLinkFileList-normal-arm64.txt (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    construct-stub-executor-link-file-list /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/TipTrack.debug.dylib /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack-ExecutorLinkFileList-normal-arm64.txt
+note: Using stub executor library with Swift entry point. (in target 'TipTrack' from project 'TipTrack')
+
+Ld /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/TipTrack normal (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -O0 -Xlinker -no_warn_duplicate_libraries -L/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -F/tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator -Xlinker -rpath -Xlinker @executable_path -Xlinker -rpath -Xlinker @executable_path/Frameworks -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -e ___debug_blank_executor_main -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_dylib -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack-DebugDylibPath-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_instlnm -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack-DebugDylibInstallName-normal-arm64.txt -Xlinker -filelist -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack-ExecutorLinkFileList-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __entitlements -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app-Simulated.xcent -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __ents_der -Xlinker /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app-Simulated.xcent.der /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/TipTrack.debug.dylib -Xlinker -no_adhoc_codesign -o /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/TipTrack
+
+Copy /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/PlugIns/TipTrackWidgets.appex /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks -remove-static-executable /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackWidgets.appex /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/PlugIns
+
+Copy /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/PlugIns/TipTrackControls.appex /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks -remove-static-executable /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrackControls.appex /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/PlugIns
+
+CopySwiftLibs /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/TipTrack.debug.dylib --scan-folder /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/Frameworks --scan-folder /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/PlugIns --scan-folder /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/SystemExtensions --scan-folder /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/Extensions --platform iphonesimulator --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
+
+ProcessInfoPlistFile /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/Info.plist /Users/atm/xcode/TipTrack/TipTrack/Info.plist (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-infoPlistUtility /Users/atm/xcode/TipTrack/TipTrack/Info.plist -producttype com.apple.product-type.application -genpkginfo /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/PkgInfo -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/assetcatalog_generated_info.plist -scanforprivacyfile /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/PlugIns/TipTrackControls.appex -scanforprivacyfile /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/PlugIns/TipTrackWidgets.appex -o /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/Info.plist
+
+ExtractAppIntentsMetadata (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name TipTrack --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk --xcode-version 27A266a --platform-family iOS --deployment-target 17.0 --bundle-identifier atm.TipTrack --output /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app --target-triple arm64-apple-ios17.0-simulator --binary-file /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/TipTrack --dependency-file /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack_dependency_info.dat --stringsdata-file /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack.SwiftFileList --metadata-file-list /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.DependencyMetadataFileList --static-metadata-file-list /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.DependencyStaticMetadataFileList --swift-const-vals-list /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/Objects-normal/arm64/TipTrack.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --no-app-shortcuts-localization
+2026-10-09 11:57:32.820 appintentsmetadataprocessor[7742:78464] Starting appintentsmetadataprocessor export
+2026-10-09 11:57:32.880 appintentsmetadataprocessor[7742:78464] Writing Metadata.appintents
+2026-10-09 11:57:32.880 appintentsmetadataprocessor[7742:78464] Metadata root: /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/Metadata.appintents
+
+CodeSign /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/TipTrack.debug.dylib (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/TipTrack.debug.dylib
+
+CodeSign /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/__preview.dylib (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/__preview.dylib
+
+CodeSign /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --entitlements /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/TipTrack.build/Debug-iphonesimulator/TipTrack.build/TipTrack.app.xcent --timestamp\=none --generate-entitlement-der /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app
+
+ValidateEmbeddedBinary /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/PlugIns/TipTrackControls.appex (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/usr/bin/embeddedBinaryValidationUtility /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/PlugIns/TipTrackControls.appex -signing-cert - -info-plist-path /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/Info.plist
+
+ValidateEmbeddedBinary /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/PlugIns/TipTrackWidgets.appex (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    /Applications/Xcode.app/Contents/Developer/usr/bin/embeddedBinaryValidationUtility /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/PlugIns/TipTrackWidgets.appex -signing-cert - -info-plist-path /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app/Info.plist
+
+Validate /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app (in target 'TipTrack' from project 'TipTrack')
+    cd /Users/atm/xcode/TipTrack
+    builtin-validationUtility /tmp/TipTrack-1.4-build/Build/Products/Debug-iphonesimulator/TipTrack.app -shallow-bundle -infoplist-subpath Info.plist
+
+PruneExplicitPrecompiledModules /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/ExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /tmp/TipTrack-1.4-build/SDKExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /tmp/TipTrack-1.4-build/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+
+** BUILD SUCCEEDED **
+

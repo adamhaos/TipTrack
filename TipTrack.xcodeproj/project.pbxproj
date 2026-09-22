@@ -6,20 +6,144 @@
 	objectVersion = 110;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		520E65B03061BDC000F1F1F6 /* ShareShiftSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520E65AF3061BDC000F1F1F6 /* ShareShiftSummaryView.swift */; };
+		A10000000000000000000001 /* TipTrackWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* TipTrackWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C10000000000000000000001 /* TipTrackControls.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* TipTrackControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D40000000000000000000001 /* TipTrack/TipTrackControlActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40000000000000000000002 /* TipTrack/TipTrackControlActionIntent.swift */; };
+		E10000000000000000000001 /* TipTrackWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = E10000000000000000000002 /* TipTrackWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E10000000000000000000010 /* TipTrackWatch/WatchSyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000011 /* TipTrackWatch/WatchSyncModels.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A10000000000000000000003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 52052F80302F3631008CDDAD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A10000000000000000000004;
+			remoteInfo = TipTrackWidgets;
+		};
+		C10000000000000000000003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 52052F80302F3631008CDDAD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C10000000000000000000004;
+			remoteInfo = TipTrackControls;
+		};
+		E10000000000000000000003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 52052F80302F3631008CDDAD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E10000000000000000000004;
+			remoteInfo = TipTrackWatch;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A10000000000000000000005 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "";
+			dstSubfolder = PlugIns;
+			files = (
+				A10000000000000000000001 /* TipTrackWidgets.appex in Embed App Extensions */,
+				C10000000000000000000001 /* TipTrackControls.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+		};
+		E10000000000000000000005 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolder = Product;
+			files = (
+				E10000000000000000000001 /* TipTrackWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		52052F88302F3631008CDDAD /* TipTrack.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TipTrack.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		520E65AF3061BDC000F1F1F6 /* ShareShiftSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareShiftSummaryView.swift; sourceTree = "<group>"; };
+		A10000000000000000000002 /* TipTrackWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TipTrackWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C10000000000000000000002 /* TipTrackControls.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TipTrackControls.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		D40000000000000000000002 /* TipTrack/TipTrackControlActionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipTrack/TipTrackControlActionIntent.swift; sourceTree = SOURCE_ROOT; };
+		E10000000000000000000002 /* TipTrackWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TipTrackWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E10000000000000000000011 /* TipTrackWatch/WatchSyncModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipTrackWatch/WatchSyncModels.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A10000000000000000000006 /* Exceptions for "TipTrackWidgets" folder in "TipTrackWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A10000000000000000000004 /* TipTrackWidgets */;
+		};
+		B20000000000000000000001 /* Exceptions for "TipTrack" folder in "TipTrack" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 52052F87302F3631008CDDAD /* TipTrack */;
+		};
+		C10000000000000000000006 /* Exceptions for "TipTrackControls" folder in "TipTrackControls" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C10000000000000000000004 /* TipTrackControls */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		52052F8A302F3631008CDDAD /* TipTrack */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B20000000000000000000001 /* Exceptions for "TipTrack" folder in "TipTrack" target */,
+			);
 			path = TipTrack;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000007 /* TipTrackWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A10000000000000000000006 /* Exceptions for "TipTrackWidgets" folder in "TipTrackWidgets" target */,
+			);
+			path = TipTrackWidgets;
+			sourceTree = "<group>";
+		};
+		C10000000000000000000007 /* TipTrackControls */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C10000000000000000000006 /* Exceptions for "TipTrackControls" folder in "TipTrackControls" target */,
+			);
+			path = TipTrackControls;
+			sourceTree = "<group>";
+		};
+		E10000000000000000000007 /* TipTrackWatch */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TipTrackWatch;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		52052F85302F3631008CDDAD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		A10000000000000000000008 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		C10000000000000000000008 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		E10000000000000000000008 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
 			);
@@ -31,7 +155,12 @@
 			isa = PBXGroup;
 			children = (
 				52052F8A302F3631008CDDAD /* TipTrack */,
+				A10000000000000000000007 /* TipTrackWidgets */,
+				C10000000000000000000007 /* TipTrackControls */,
+				E10000000000000000000007 /* TipTrackWatch */,
+				520E65AF3061BDC000F1F1F6 /* ShareShiftSummaryView.swift */,
 				52052F89302F3631008CDDAD /* Products */,
+				52FD1417307B82F3009B064D /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -39,8 +168,20 @@
 			isa = PBXGroup;
 			children = (
 				52052F88302F3631008CDDAD /* TipTrack.app */,
+				A10000000000000000000002 /* TipTrackWidgets.appex */,
+				C10000000000000000000002 /* TipTrackControls.appex */,
+				E10000000000000000000002 /* TipTrackWatch.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		52FD1417307B82F3009B064D /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				D40000000000000000000002 /* TipTrack/TipTrackControlActionIntent.swift */,
+				E10000000000000000000011 /* TipTrackWatch/WatchSyncModels.swift */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -53,8 +194,15 @@
 				52052F84302F3631008CDDAD /* Sources */,
 				52052F85302F3631008CDDAD /* Frameworks */,
 				52052F86302F3631008CDDAD /* Resources */,
+				A10000000000000000000005 /* Embed App Extensions */,
+				E10000000000000000000005 /* Embed Watch Content */,
 			);
 			buildRules = (
+			);
+			dependencies = (
+				A10000000000000000000009 /* PBXTargetDependency */,
+				C10000000000000000000009 /* PBXTargetDependency */,
+				E10000000000000000000009 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				52052F8A302F3631008CDDAD /* TipTrack */,
@@ -62,6 +210,60 @@
 			name = TipTrack;
 			productName = TipTrack;
 			productReference = 52052F88302F3631008CDDAD /* TipTrack.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A10000000000000000000004 /* TipTrackWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1000000000000000000000A /* Build configuration list for PBXNativeTarget "TipTrackWidgets" */;
+			buildPhases = (
+				A1000000000000000000000B /* Sources */,
+				A10000000000000000000008 /* Frameworks */,
+				A1000000000000000000000C /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				A10000000000000000000007 /* TipTrackWidgets */,
+			);
+			name = TipTrackWidgets;
+			productName = TipTrackWidgets;
+			productReference = A10000000000000000000002 /* TipTrackWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		C10000000000000000000004 /* TipTrackControls */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C1000000000000000000000A /* Build configuration list for PBXNativeTarget "TipTrackControls" */;
+			buildPhases = (
+				C1000000000000000000000B /* Sources */,
+				C10000000000000000000008 /* Frameworks */,
+				C1000000000000000000000C /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				C10000000000000000000007 /* TipTrackControls */,
+			);
+			name = TipTrackControls;
+			productName = TipTrackControls;
+			productReference = C10000000000000000000002 /* TipTrackControls.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		E10000000000000000000004 /* TipTrackWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E1000000000000000000000A /* Build configuration list for PBXNativeTarget "TipTrackWatch" */;
+			buildPhases = (
+				E1000000000000000000000B /* Sources */,
+				E10000000000000000000008 /* Frameworks */,
+				E1000000000000000000000C /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				E10000000000000000000007 /* TipTrackWatch */,
+			);
+			name = TipTrackWatch;
+			productName = TipTrackWatch;
+			productReference = E10000000000000000000002 /* TipTrackWatch.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -76,6 +278,27 @@
 				TargetAttributes = {
 					52052F87302F3631008CDDAD = {
 						CreatedOnToolsVersion = 27.0;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.iOS = {
+								enabled = 1;
+							};
+						};
+					};
+					A10000000000000000000004 = {
+						CreatedOnToolsVersion = 27.0;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.iOS = {
+								enabled = 1;
+							};
+						};
+					};
+					C10000000000000000000004 = {
+						CreatedOnToolsVersion = 27.0;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.iOS = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -94,6 +317,9 @@
 			projectRoot = "";
 			targets = (
 				52052F87302F3631008CDDAD /* TipTrack */,
+				A10000000000000000000004 /* TipTrackWidgets */,
+				C10000000000000000000004 /* TipTrackControls */,
+				E10000000000000000000004 /* TipTrackWatch */,
 			);
 		};
 /* End PBXProject section */
@@ -104,15 +330,66 @@
 			files = (
 			);
 		};
+		A1000000000000000000000C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		C1000000000000000000000C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		E1000000000000000000000C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		52052F84302F3631008CDDAD /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
+				520E65B03061BDC000F1F1F6 /* ShareShiftSummaryView.swift in Sources */,
+				E10000000000000000000010 /* TipTrackWatch/WatchSyncModels.swift in Sources */,
+			);
+		};
+		A1000000000000000000000B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		C1000000000000000000000B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				D40000000000000000000001 /* TipTrack/TipTrackControlActionIntent.swift in Sources */,
+			);
+		};
+		E1000000000000000000000B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
 			);
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A10000000000000000000009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A10000000000000000000004 /* TipTrackWidgets */;
+			targetProxy = A10000000000000000000003 /* PBXContainerItemProxy */;
+		};
+		C10000000000000000000009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C10000000000000000000004 /* TipTrackControls */;
+			targetProxy = C10000000000000000000003 /* PBXContainerItemProxy */;
+		};
+		E10000000000000000000009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E10000000000000000000004 /* TipTrackWatch */;
+			targetProxy = E10000000000000000000003 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		52052F91302F3632008CDDAD /* Debug configuration for PBXProject "TipTrack" */ = {
@@ -241,21 +518,30 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TipTrack/TipTrack.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = ZCW4C29TGM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TipTrack/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TipTrack3r;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Scan a checkout slip and attach it to a logged shift.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Authenticate to reveal your TipTrack earnings.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Select your job automatically when you are near a saved workplace.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = atm.TipTrack;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -269,6 +555,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
 		};
@@ -277,21 +564,30 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TipTrack/TipTrack.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = ZCW4C29TGM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TipTrack/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TipTrack3r;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Scan a checkout slip and attach it to a logged shift.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Authenticate to reveal your TipTrack earnings.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Select your job automatically when you are near a saved workplace.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = atm.TipTrack;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -305,6 +601,201 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		A1000000000000000000000D /* Debug configuration for PBXNativeTarget "TipTrackWidgets" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = TipTrackWidgets/TipTrackWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = ZCW4C29TGM;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TipTrackWidgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.5;
+				PRODUCT_BUNDLE_IDENTIFIER = atm.TipTrack.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		A1000000000000000000000E /* Release configuration for PBXNativeTarget "TipTrackWidgets" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = TipTrackWidgets/TipTrackWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = ZCW4C29TGM;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TipTrackWidgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.5;
+				PRODUCT_BUNDLE_IDENTIFIER = atm.TipTrack.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		C1000000000000000000000D /* Debug configuration for PBXNativeTarget "TipTrackControls" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = TipTrackControls/TipTrackControls.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = ZCW4C29TGM;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TipTrackControls/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.5;
+				PRODUCT_BUNDLE_IDENTIFIER = atm.TipTrack.controls;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		C1000000000000000000000E /* Release configuration for PBXNativeTarget "TipTrackControls" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = TipTrackControls/TipTrackControls.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = ZCW4C29TGM;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TipTrackControls/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.5;
+				PRODUCT_BUNDLE_IDENTIFIER = atm.TipTrack.controls;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		E1000000000000000000000D /* Debug configuration for PBXNativeTarget "TipTrackWatch" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = ZCW4C29TGM;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TipTrack3r;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = atm.TipTrack;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.5;
+				PRODUCT_BUNDLE_IDENTIFIER = atm.TipTrack.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VERSIONING_SYSTEM = "apple-generic";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		E1000000000000000000000E /* Release configuration for PBXNativeTarget "TipTrackWatch" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = ZCW4C29TGM;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TipTrack3r;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = atm.TipTrack;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.5;
+				PRODUCT_BUNDLE_IDENTIFIER = atm.TipTrack.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VERSIONING_SYSTEM = "apple-generic";
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
 			};
 			name = Release;
 		};
@@ -324,6 +815,30 @@
 			buildConfigurations = (
 				52052F94302F3632008CDDAD /* Debug configuration for PBXNativeTarget "TipTrack" */,
 				52052F95302F3632008CDDAD /* Release configuration for PBXNativeTarget "TipTrack" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		A1000000000000000000000A /* Build configuration list for PBXNativeTarget "TipTrackWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1000000000000000000000D /* Debug configuration for PBXNativeTarget "TipTrackWidgets" */,
+				A1000000000000000000000E /* Release configuration for PBXNativeTarget "TipTrackWidgets" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		C1000000000000000000000A /* Build configuration list for PBXNativeTarget "TipTrackControls" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C1000000000000000000000D /* Debug configuration for PBXNativeTarget "TipTrackControls" */,
+				C1000000000000000000000E /* Release configuration for PBXNativeTarget "TipTrackControls" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		E1000000000000000000000A /* Build configuration list for PBXNativeTarget "TipTrackWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E1000000000000000000000D /* Debug configuration for PBXNativeTarget "TipTrackWatch" */,
+				E1000000000000000000000E /* Release configuration for PBXNativeTarget "TipTrackWatch" */,
 			);
 			defaultConfigurationName = Release;
 		};
