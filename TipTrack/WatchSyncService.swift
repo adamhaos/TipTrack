@@ -59,7 +59,8 @@ final class WatchSyncService: NSObject {
             earningsHidden: hidden && showEarnings,
             options: WatchDisplayOptions(showTotals: Self.option(FeatureKeys.watchShowTotals),
                 showLiveTimer: Self.option(FeatureKeys.watchShowLiveTimer, default: false)),
-            upcoming: upcoming(jobs: jobs), weekEnd: weekEnd)
+            upcoming: upcoming(jobs: jobs), weekEnd: weekEnd,
+            rejectedLogIDs: rejectedLogIDs.compactMap(UUID.init))
     }
 
     private var weekEnd: Date? {
@@ -115,13 +116,22 @@ final class WatchSyncService: NSObject {
         case let .startShift(id, jobID, at):
             let job = jobs.first { $0.id == jobID } ?? jobs.first(where: \.isDefault) ?? jobs.first
             await LiveShiftManager.shared.start(job: job, id: id, startedAt: at)
-        case .endShift:
-            await LiveShiftManager.shared.stop()
+        case let .endShift(id):
+            // Only end the shift the watch meant; an End for one already finished is stale.
+            if let id {
+                LiveShiftManager.shared.markEnded(id)
+                if LiveShiftManager.shared.current?.id == id { await LiveShiftManager.shared.stop() }
+            } else {
+                await LiveShiftManager.shared.stop()
+            }
         case let .logShift(entry):
             save(entry, jobs: jobs, context: context)
         case let .undoLog(id):
             undo(id, context: context)
         }
+        // Queued commands can arrive with the app in the background, so push the new state
+        // to the watch here rather than waiting for the dashboard to notice.
+        publish()
         return currentState().flatMap { try? JSONEncoder().encode($0) }
     }
 
@@ -133,9 +143,17 @@ final class WatchSyncService: NSObject {
         set { UserDefaults.standard.set(Array(newValue.suffix(50)), forKey: Self.undoneKey) }
     }
 
+    private static let rejectedKey = "watch.rejectedShiftIDs"
+    private var rejectedLogIDs: [String] {
+        get { UserDefaults.standard.stringArray(forKey: Self.rejectedKey) ?? [] }
+        set { UserDefaults.standard.set(Array(newValue.suffix(20)), forKey: Self.rejectedKey) }
+    }
+
     private func undo(_ id: UUID, context: ModelContext) {
         undoneIDs.append(id.uuidString)
-        guard let shift = try? context.fetch(FetchDescriptor<Shift>(predicate: #Predicate { $0.id == id })).first else { return }
+        // A shift already deleted on the phone stays in Recently Deleted rather than vanishing.
+        guard let shift = try? context.fetch(FetchDescriptor<Shift>(predicate: #Predicate { $0.id == id })).first,
+              shift.deletedAt == nil else { return }
         context.delete(shift)
         do {
             try context.save()
@@ -157,7 +175,11 @@ final class WatchSyncService: NSObject {
         let id = entry.id
         let existing = (try? context.fetchCount(FetchDescriptor<Shift>(predicate: #Predicate { $0.id == id }))) ?? 0
         let values = [entry.creditTip, entry.cashTip, entry.tipOut, entry.hoursWorked ?? 0]
-        guard existing == 0, values.allSatisfy({ $0.isFinite && $0 >= 0 }), values.contains(where: { $0 > 0 }) else { return }
+        guard existing == 0 else { return }
+        guard values.allSatisfy({ $0.isFinite && $0 >= 0 }), values.contains(where: { $0 > 0 }) else {
+            rejectedLogIDs.append(entry.id.uuidString)
+            return
+        }
         context.insert(Shift(id: id, date: entry.date, creditTip: entry.creditTip, cashTip: entry.cashTip,
             barTipOut: entry.tipOut, hoursWorked: entry.hoursWorked.flatMap { $0 > 0 ? $0 : nil },
             job: jobs.first { $0.id == entry.jobID }))
@@ -165,6 +187,7 @@ final class WatchSyncService: NSObject {
             try context.save()
         } catch {
             context.rollback()
+            rejectedLogIDs.append(entry.id.uuidString)
             return
         }
         // The app may have been launched in the background with no view to refresh the widgets.

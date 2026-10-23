@@ -106,6 +106,76 @@ struct ReleaseChecks {
         _ = try CalendarFeed.parse(largeIntervalFeed, jobID: id, now: date)
         precondition(CalendarFeed.url("webcal://example.com/feed.ics")?.scheme == "https")
         precondition(CalendarFeed.url("http://example.com/feed.ics") == nil)
+        // Two-digit years read as 20xx instead of year 26; hex and exponents are rejected.
+        let shortYear = TipTrackCSV.parse("10/13/26 18:30,Cafe,10,20,5").rows
+        precondition(shortYear.count == 1 && Calendar(identifier: .gregorian).component(.year, from: shortYear[0].date) == 2026)
+        precondition(TipTrackCSV.parse("2026-10-02,Cafe,0x10,0,0").rows.isEmpty)
+        precondition(TipTrackCSV.parse("2026-10-02,Cafe,1e3,0,0").rows.isEmpty)
+        // The repeated 1 AM hour when clocks go back keeps its exact moment through export.
+        let ambiguous = Shift(date: Date(timeIntervalSince1970: 1_793_514_600), creditTip: 10, cashTip: 0,
+            hoursWorked: 7.3333, hourlyRate: 15.125, job: job)
+        let ambiguousRow = TipTrackCSV.parse(TipTrackCSV.exportText(for: [ambiguous])).rows[0]
+        precondition(ambiguousRow.date == ambiguous.date)
+        precondition(ambiguousRow.hoursWorked == 7.3333 && ambiguousRow.hourlyRate == 15.125)
+        precondition(TipTrackCSV.rowsForImport([ambiguousRow], existingShifts: [ambiguous]).isEmpty)
+        // Formula-looking names are neutralized in the file and restored on import.
+        let formulaJob = Job(name: "=HYPERLINK(1)")
+        let formulaCSV = TipTrackCSV.exportText(for: [Shift(date: date, creditTip: 1, cashTip: 0,
+            notes: "+note", job: formulaJob)])
+        precondition(formulaCSV.contains("\"'=HYPERLINK(1)\"") && formulaCSV.contains("\"'+note\""))
+        let formulaRow = TipTrackCSV.parse(formulaCSV).rows[0]
+        precondition(formulaRow.jobName == "=HYPERLINK(1)" && formulaRow.notes == "+note")
+        // A name that really starts with an apostrophe keeps it.
+        let quotedJob = Job(name: "'=Example")
+        let quotedRow = TipTrackCSV.parse(TipTrackCSV.exportText(for: [Shift(date: date, creditTip: 1, cashTip: 0,
+            job: quotedJob)])).rows[0]
+        precondition(quotedRow.jobName == "'=Example")
+        // Older exports without a UTC offset still import.
+        precondition(TipTrackCSV.parse("2026-10-02 18:30,Cafe,10,20,5").rows.count == 1)
+
+        // Spring-forward night: a time in the skipped hour moves to the next valid time.
+        let gapFeed = """
+        BEGIN:VCALENDAR
+        BEGIN:VEVENT
+        UID:gap
+        DTSTART;TZID=America/New_York:20270313T200000
+        DTEND;TZID=America/New_York:20270314T023000
+        SUMMARY:Late bar
+        END:VEVENT
+        BEGIN:VEVENT
+        UID:outlook
+        DTSTART;TZID=Pacific Standard Time:20270320T170000
+        DTEND;TZID=Pacific Standard Time:20270320T230000
+        SUMMARY:Outlook shift
+        END:VEVENT
+        BEGIN:VEVENT
+        UID:until
+        DTSTART;TZID=America/New_York:20270322T170000
+        DURATION:PT6H
+        RRULE:FREQ=DAILY;UNTIL=20270324
+        SUMMARY:Until shift
+        END:VEVENT
+        BEGIN:VEVENT
+        UID:until
+        RECURRENCE-ID;TZID=America/New_York:20270323T170000
+        DTSTART;TZID=America/New_York:20270323T180000
+        DURATION:PT2H
+        SUMMARY:Moved short
+        END:VEVENT
+        END:VCALENDAR
+        """
+        let gapEvents = try CalendarFeed.parse(gapFeed, jobID: id, now: Date(timeIntervalSince1970: 1_804_000_000))
+        let late = gapEvents.first { $0.title == "Late bar" }!
+        precondition(late.end.timeIntervalSince(late.start) == 6.5 * 3600)
+        let outlook = gapEvents.first { $0.title == "Outlook shift" }!
+        var pacific = Calendar(identifier: .gregorian)
+        pacific.timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        precondition(pacific.component(.hour, from: outlook.start) == 17)
+        precondition(gapEvents.filter { $0.title == "Until shift" }.count == 2)
+        precondition(CalendarFeed.date(CalendarFeed.Property(name: "DTSTART", parameters: [:],
+            value: "20270230T235959Z")) == nil)
+        let moved = gapEvents.first { $0.title == "Moved short" }!
+        precondition(moved.end.timeIntervalSince(moved.start) == 2 * 3600)
         print("Release checks passed: CSV round trips, duplicate protection, invalid amounts, hourly pay, localized entry, and recurring schedules.")
     }
 }

@@ -76,8 +76,16 @@ enum CalendarFeed {
             if let rule = block.first(where: { $0.name == "RRULE" }) {
                 starts = try occurrences(start: start, property: startProp, rule: rule.value, until: upper)
             }
-            starts += block.filter { $0.name == "RDATE" }.flatMap { dates($0) }
-            let excluded = Set(block.filter { $0.name == "EXDATE" }.flatMap { dates($0) })
+            // RDATE/EXDATE without their own TZID are in the series' zone, not the phone's.
+            let inheritZone = { (property: Property) -> Property in
+                var property = property
+                if property.parameters["TZID"] == nil, let zone = startProp.parameters["TZID"] {
+                    property.parameters["TZID"] = zone
+                }
+                return property
+            }
+            starts += block.filter { $0.name == "RDATE" }.map(inheritZone).flatMap { dates($0) }
+            let excluded = Set(block.filter { $0.name == "EXDATE" }.map(inheritZone).flatMap { dates($0) })
             for occurrence in starts where occurrence >= lower && occurrence < upper && !excluded.contains(occurrence) {
                 let id = "\(jobID.uuidString)|\(uid)|\(occurrence.timeIntervalSince1970)"
                 result[id] = ScheduledShift(id: id, jobID: jobID, title: title, start: occurrence,
@@ -92,8 +100,10 @@ enum CalendarFeed {
             let previous = result.removeValue(forKey: id)
             if block.contains(where: { $0.name == "STATUS" && $0.value == "CANCELLED" }) { continue }
             guard let startProp = block.first(where: { $0.name == "DTSTART" }), let start = date(startProp) else { continue }
+            // A moved occurrence may give its own DURATION instead of DTEND.
             let end = block.first(where: { $0.name == "DTEND" }).flatMap { date($0) } ??
-                start.addingTimeInterval(previous.map { $0.end.timeIntervalSince($0.start) } ?? 0)
+                start.addingTimeInterval(block.first(where: { $0.name == "DURATION" }).flatMap { duration($0.value) }
+                    ?? previous.map { $0.end.timeIntervalSince($0.start) } ?? 0)
             if start >= lower && start < upper {
                 result[id] = ScheduledShift(id: id, jobID: jobID,
                     title: unescape(block.first(where: { $0.name == "SUMMARY" })?.value ?? previous?.title ?? "Scheduled shift"),
@@ -103,11 +113,37 @@ enum CalendarFeed {
         return result.values.sorted { $0.start < $1.start }
     }
 
+    /// Outlook and Exchange feeds name zones the Windows way.
+    private static let windowsZones: [String: String] = [
+        "Hawaiian Standard Time": "Pacific/Honolulu", "Alaskan Standard Time": "America/Anchorage",
+        "Pacific Standard Time": "America/Los_Angeles", "US Mountain Standard Time": "America/Phoenix",
+        "Mountain Standard Time": "America/Denver", "Central Standard Time": "America/Chicago",
+        "Eastern Standard Time": "America/New_York", "US Eastern Standard Time": "America/Indianapolis",
+        "Atlantic Standard Time": "America/Halifax", "Newfoundland Standard Time": "America/St_Johns",
+        "Canada Central Standard Time": "America/Regina", "Central Standard Time (Mexico)": "America/Mexico_City",
+        "SA Pacific Standard Time": "America/Bogota", "SA Eastern Standard Time": "America/Cayenne",
+        "E. South America Standard Time": "America/Sao_Paulo", "Argentina Standard Time": "America/Buenos_Aires",
+        "GMT Standard Time": "Europe/London", "Greenwich Standard Time": "Atlantic/Reykjavik",
+        "W. Europe Standard Time": "Europe/Berlin", "Romance Standard Time": "Europe/Paris",
+        "Central Europe Standard Time": "Europe/Budapest", "Central European Standard Time": "Europe/Warsaw",
+        "E. Europe Standard Time": "Europe/Chisinau", "GTB Standard Time": "Europe/Bucharest",
+        "FLE Standard Time": "Europe/Kiev", "Russian Standard Time": "Europe/Moscow",
+        "South Africa Standard Time": "Africa/Johannesburg", "Israel Standard Time": "Asia/Jerusalem",
+        "Arabian Standard Time": "Asia/Dubai", "India Standard Time": "Asia/Kolkata",
+        "China Standard Time": "Asia/Shanghai", "Singapore Standard Time": "Asia/Singapore",
+        "Tokyo Standard Time": "Asia/Tokyo", "Korea Standard Time": "Asia/Seoul",
+        "W. Australia Standard Time": "Australia/Perth", "Cen. Australia Standard Time": "Australia/Adelaide",
+        "AUS Central Standard Time": "Australia/Darwin", "E. Australia Standard Time": "Australia/Brisbane",
+        "AUS Eastern Standard Time": "Australia/Sydney", "Tasmania Standard Time": "Australia/Hobart",
+        "New Zealand Standard Time": "Pacific/Auckland", "UTC": "UTC"
+    ]
+
     private static func resolveTimeZone(identifier: String?) -> TimeZone {
         guard let identifier = identifier, !identifier.isEmpty else { return .current }
         if let tz = TimeZone(identifier: identifier) { return tz }
         let cleaned = identifier.trimmingCharacters(in: CharacterSet(charactersIn: "\"/"))
         if let tz = TimeZone(identifier: cleaned) { return tz }
+        if let mapped = windowsZones[cleaned], let tz = TimeZone(identifier: mapped) { return tz }
         let parts = cleaned.split(separator: "/")
         if parts.count >= 2 {
             let lastTwo = parts.suffix(2).joined(separator: "/")
@@ -124,7 +160,27 @@ enum CalendarFeed {
         formatter.dateFormat = property.value.count == 8 ? "yyyyMMdd" :
             (property.value.hasSuffix("Z") ? "yyyyMMdd'T'HHmmss'Z'" : "yyyyMMdd'T'HHmmss")
         formatter.isLenient = false
-        return formatter.date(from: property.value)
+        if let parsed = formatter.date(from: property.value) { return parsed }
+        // Strict parsing rejects a local time that doesn't exist because clocks jumped
+        // forward (e.g. 2:30 AM on spring-forward night). Read the digits and let the
+        // calendar move it to the next valid time, as calendar apps do.
+        let digits = property.value.filter(\.isNumber)
+        guard digits.count == 14, property.value.count == 15 || property.value.count == 16,
+              let year = Int(digits.prefix(4)), let month = Int(digits.dropFirst(4).prefix(2)),
+              let day = Int(digits.dropFirst(6).prefix(2)), let hour = Int(digits.dropFirst(8).prefix(2)),
+              let minute = Int(digits.dropFirst(10).prefix(2)), let second = Int(digits.dropFirst(12).prefix(2)),
+              (1...12).contains(month), (1...31).contains(day), (0...23).contains(hour),
+              (0...59).contains(minute), (0...59).contains(second) else { return nil }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = formatter.timeZone
+        let components = DateComponents(year: year, month: month, day: day, hour: hour, minute: minute, second: second)
+        // Only a skipped hour may move: the same day, pushed later. Anything else (Feb 30) is invalid.
+        guard let resolved = calendar.date(from: components) else { return nil }
+        let result = calendar.dateComponents([.year, .month, .day, .hour], from: resolved)
+        guard result.year == year, result.month == month, result.day == day, (result.hour ?? -1) >= hour else {
+            return nil
+        }
+        return resolved
     }
     private static func dates(_ property: Property) -> [Date] {
         property.value.split(separator: ",").compactMap {
@@ -173,7 +229,12 @@ enum CalendarFeed {
         cal.firstWeekday = codes[fields["WKST"] ?? "MO"] ?? 2
         let interval = max(1, Int(fields["INTERVAL"] ?? "1") ?? 1)
         let count = max(1, Int(fields["COUNT"] ?? "10000") ?? 10000)
-        let end = fields["UNTIL"].flatMap { date(Property(name: "UNTIL", parameters: property.parameters, value: $0)) } ?? upper
+        var end = fields["UNTIL"].flatMap { date(Property(name: "UNTIL", parameters: property.parameters, value: $0)) } ?? upper
+        // A date-only UNTIL on a timed series includes that whole day.
+        if let until = fields["UNTIL"], until.count == 8, property.value.count != 8,
+           let nextDay = cal.date(byAdding: .day, value: 1, to: end) {
+            end = nextDay.addingTimeInterval(-1)
+        }
         let weekdays = Set(dayCodes.compactMap { codes[$0] })
         let monthDays = fields["BYMONTHDAY"]?.split(separator: ",").compactMap { Int($0) } ?? []
         guard monthDays.allSatisfy({ (1...31).contains($0) }),

@@ -77,6 +77,12 @@ struct WatchHomeView: View {
             }
         }
         .animation(.snappy(duration: 0.25), value: store.undoableEntry?.id)
+        .alert("Shift Not Saved", isPresented: Binding(
+            get: { store.logFailure != nil },
+            set: { if !$0 { store.logFailure = nil } }
+        )) {
+            Button("OK", role: .cancel) { store.logFailure = nil }
+        } message: { Text(store.logFailure ?? "") }
     }
 
     private var undoToast: some View {

@@ -365,7 +365,7 @@ struct MonthBreakdownView: View {
                                         .shiftQuickActions(shift) { shiftToEdit = shift }
                                         .listRowSeparator(.hidden)
                                         .listRowBackground(Color.clear)
-                                        .listRowInsets(EdgeInsets(top: 5, leading: 0, bottom: 5, trailing: 0))
+                                        .listRowInsets(EdgeInsets(top: 5, leading: 2, bottom: 5, trailing: 2))
                                     }
                                 }
                             } header: {
@@ -454,7 +454,7 @@ struct WeekBreakdownView: View {
                                 .foregroundStyle(.secondary)
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 0))
+                                .listRowInsets(EdgeInsets(top: 2, leading: 17, bottom: 2, trailing: 0))
                         } else {
                             ForEach(dailyShifts) { shift in
                                 Button {
@@ -466,7 +466,7 @@ struct WeekBreakdownView: View {
                                 .shiftQuickActions(shift) { shiftToEdit = shift }
                                 .listRowSeparator(.hidden)
                                 .listRowBackground(Color.clear)
-                                .listRowInsets(EdgeInsets(top: 5, leading: 0, bottom: 5, trailing: 0))
+                                .listRowInsets(EdgeInsets(top: 5, leading: 2, bottom: 5, trailing: 2))
                                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                     Button(role: .destructive) {
                                         deletionError = ShiftDeletion.remove([shift], context: modelContext)
@@ -618,11 +618,11 @@ struct EditShiftSheet: View {
             .onAppear {
                 shiftDate = shift.date
                 selectedJob = shift.job
-                creditInput = String(shift.creditTip)
-                cashInput = String(shift.cashTip)
-                barTipOutInput = String(shift.barTipOut)
-                hoursWorkedInput = shift.hoursWorked.map { String($0) } ?? ""
-                hourlyRateInput = shift.hourlyRate > 0 ? String(shift.hourlyRate) : ""
+                creditInput = Self.money(shift.creditTip)
+                cashInput = Self.money(shift.cashTip)
+                barTipOutInput = Self.money(shift.barTipOut)
+                hoursWorkedInput = shift.hoursWorked.map(Self.decimal) ?? ""
+                hourlyRateInput = shift.hourlyRate > 0 ? Self.money(shift.hourlyRate) : ""
                 notesInput = shift.notes
                 receiptImage = ReceiptStore.image(named: shift.receiptImageName)
             }
@@ -630,10 +630,10 @@ struct EditShiftSheet: View {
                 ReceiptScannerView(preferredReportType: ShiftReportType(rawValue: selectedJob?.receiptPOS ?? "") ?? .automatic) { scanned in
                     receiptImage = scanned.image
                     receiptChanged = true
-                    if let value = scanned.credit { creditInput = String(value) }
-                    if let value = scanned.cash { cashInput = String(value) }
-                    if let value = scanned.tipOut { barTipOutInput = String(value) }
-                    if let value = scanned.hours { hoursWorkedInput = String(value) }
+                    if let value = scanned.credit { creditInput = Self.money(value) }
+                    if let value = scanned.cash { cashInput = Self.money(value) }
+                    if let value = scanned.tipOut { barTipOutInput = Self.money(value) }
+                    if let value = scanned.hours { hoursWorkedInput = Self.decimal(value) }
                 }
             }
             .alert("Couldn't Save Shift", isPresented: Binding(
@@ -665,6 +665,15 @@ struct EditShiftSheet: View {
                 }
             }
         }
+    }
+
+    /// "100.50" rather than "100.5", in the person's decimal style so it reads back the same.
+    nonisolated private static func money(_ value: Double) -> String {
+        value.formatted(.number.precision(.fractionLength(2...4)).grouping(.never))
+    }
+
+    nonisolated private static func decimal(_ value: Double) -> String {
+        value.formatted(.number.precision(.fractionLength(0...4)).grouping(.never))
     }
 
     private var summaryTotal: Double {

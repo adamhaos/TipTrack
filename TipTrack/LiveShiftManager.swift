@@ -33,7 +33,8 @@ final class LiveShiftManager {
     }
 
     func start(job: Job?, id: UUID = UUID(), startedAt: Date = Date()) async {
-        guard current == nil else { return }
+        // A start delivered late from the watch, for a shift that has already ended, is ignored.
+        guard current == nil, !endedIDs.contains(id.uuidString) else { return }
         let state = SharedLiveShift(id: id, startedAt: startedAt, jobID: job?.id,
             jobName: job?.name ?? "Work Shift")
         current = state
@@ -50,6 +51,7 @@ final class LiveShiftManager {
     @discardableResult
     func stop() async -> SharedLiveShift? {
         let stopped = current
+        if let stopped { markEnded(stopped.id) }
         current = nil
         defaults?.removeObject(forKey: key)
         WatchSyncService.shared.publish()
@@ -57,6 +59,15 @@ final class LiveShiftManager {
             await activity.end(nil, dismissalPolicy: .immediate)
         }
         return stopped
+    }
+
+    private let endedKey = "tiptrack.liveShift.ended"
+    private var endedIDs: [String] { defaults?.stringArray(forKey: endedKey) ?? [] }
+
+    /// Remembers a finished shift so a late start or end for it can be recognized.
+    func markEnded(_ id: UUID) {
+        guard !endedIDs.contains(id.uuidString) else { return }
+        defaults?.set(Array((endedIDs + [id.uuidString]).suffix(50)), forKey: endedKey)
     }
 
     func reloadSharedState() {

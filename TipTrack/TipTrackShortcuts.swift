@@ -164,7 +164,8 @@ enum TipTrackIntentStore {
         )).filter { jobID == nil || $0.job?.id == jobID }
 
         if period == .lastShift {
-            shifts = Array(shifts.prefix(1))
+            // A shift logged ahead of time isn't the last one worked.
+            shifts = Array(shifts.filter { $0.date <= now }.prefix(1))
         } else if let interval = TipTrackSiriRules.interval(for: period, now: now, calendar: .preferredWeek) {
             shifts = shifts.filter { $0.date >= interval.start && $0.date < interval.end }
         }

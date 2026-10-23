@@ -5,6 +5,8 @@ struct DashboardGreeting: View {
     let shifts: [Shift]
     let showsGreeting: Bool
     @State private var showsInsights = false
+    @State private var iconSpin = 0.0
+    @State private var isOpeningInsights = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private static let iconSize: CGFloat = 48
     @AppStorage("insightsDiscoveryCount") private var insightsDiscoveryCount = 0
@@ -122,8 +124,7 @@ struct DashboardGreeting: View {
             Spacer()
 
             Button {
-                insightsDiscoveryCount = min(insightsDiscoveryCount + 1, 3)
-                showsInsights = true
+                openInsights()
             } label: {
                 VStack(spacing: 0) {
                     ZStack {
@@ -141,6 +142,7 @@ struct DashboardGreeting: View {
                             .offset(x: -18, y: 12)
                     }
                     .frame(width: Self.iconSize, height: Self.iconSize)
+                    .rotation3DEffect(.degrees(iconSpin), axis: (x: 0, y: 1, z: 0), perspective: 0.4)
                     .contentShape(Rectangle())
                     // Hidden after a few visits, leaving just the cash icon.
                     if alwaysShowInsightsLabel || insightsDiscoveryCount < 3 {
@@ -162,6 +164,24 @@ struct DashboardGreeting: View {
         }
         .padding(.horizontal, 4)
         .sheet(isPresented: $showsInsights) { EarningsInsightsView() }
+    }
+
+    /// Flips the cash icon like a coin, holding the sheet back a beat so the spin shows
+    /// (iOS sets the sheet's own speed).
+    private func openInsights() {
+        guard !isOpeningInsights else { return }
+        insightsDiscoveryCount = min(insightsDiscoveryCount + 1, 3)
+        guard !reduceMotion else {
+            showsInsights = true
+            return
+        }
+        isOpeningInsights = true
+        withAnimation(.easeInOut(duration: 0.5)) { iconSpin += 360 }
+        Task {
+            try? await Task.sleep(for: .milliseconds(450))
+            showsInsights = true
+            isOpeningInsights = false
+        }
     }
 
     /// The number in the headline, so its digits can roll when it changes.

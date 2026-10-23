@@ -134,6 +134,8 @@ struct TipTrackerApp: App {
         .backgroundTask(.appRefresh("atm.TipTrack.scheduleRefresh")) {
             if let container {
                 await ScheduleStore.shared.backgroundRefresh(container: container)
+                // Keeps the watch's totals on the current day and week between app opens.
+                await WatchSyncService.shared.publish()
             }
         }
     }

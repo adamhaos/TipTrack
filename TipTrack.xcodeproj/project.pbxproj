@@ -8,8 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		520E65B03061BDC000F1F1F6 /* ShareShiftSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520E65AF3061BDC000F1F1F6 /* ShareShiftSummaryView.swift */; };
-		A10000000000000000000001 /* TipTrackWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* TipTrackWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		C10000000000000000000001 /* TipTrackControls.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* TipTrackControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A10000000000000000000001 /* TipTrackWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* TipTrackWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C10000000000000000000001 /* TipTrackControls.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* TipTrackControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		D40000000000000000000001 /* TipTrack/TipTrackControlActionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D40000000000000000000002 /* TipTrack/TipTrackControlActionIntent.swift */; };
 		E10000000000000000000001 /* TipTrackWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = E10000000000000000000002 /* TipTrackWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E10000000000000000000010 /* TipTrackWatch/WatchSyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000011 /* TipTrackWatch/WatchSyncModels.swift */; };
@@ -40,15 +40,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		A10000000000000000000005 /* Embed App Extensions */ = {
+		A10000000000000000000005 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			dstPath = "";
 			dstSubfolder = PlugIns;
 			files = (
-				A10000000000000000000001 /* TipTrackWidgets.appex in Embed App Extensions */,
-				C10000000000000000000001 /* TipTrackControls.appex in Embed App Extensions */,
+				A10000000000000000000001 /* TipTrackWidgets.appex in Embed Foundation Extensions */,
+				C10000000000000000000001 /* TipTrackControls.appex in Embed Foundation Extensions */,
 			);
-			name = "Embed App Extensions";
+			name = "Embed Foundation Extensions";
 		};
 		E10000000000000000000005 /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -194,7 +194,7 @@
 				52052F84302F3631008CDDAD /* Sources */,
 				52052F85302F3631008CDDAD /* Frameworks */,
 				52052F86302F3631008CDDAD /* Resources */,
-				A10000000000000000000005 /* Embed App Extensions */,
+				A10000000000000000000005 /* Embed Foundation Extensions */,
 				E10000000000000000000005 /* Embed Watch Content */,
 			);
 			buildRules = (
@@ -274,7 +274,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2700;
-				LastUpgradeCheck = 2700;
+				LastUpgradeCheck = 2710;
 				TargetAttributes = {
 					52052F87302F3631008CDDAD = {
 						CreatedOnToolsVersion = 27.0;
@@ -451,6 +451,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -508,6 +509,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -520,13 +522,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = TipTrack/TipTrack.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = ZCW4C29TGM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TipTrack/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TipTrack3r;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Scan a checkout slip and attach it to a logged shift.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Authenticate to reveal your TipTrack earnings.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Select your job automatically when you are near a saved workplace.";
@@ -566,13 +569,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = TipTrack/TipTrack.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = ZCW4C29TGM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TipTrack/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TipTrack3r;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Scan a checkout slip and attach it to a logged shift.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Authenticate to reveal your TipTrack earnings.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Select your job automatically when you are near a saved workplace.";
@@ -611,7 +615,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = TipTrackWidgets/TipTrackWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = ZCW4C29TGM;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TipTrackWidgets/Info.plist;
@@ -642,7 +646,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = TipTrackWidgets/TipTrackWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = ZCW4C29TGM;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TipTrackWidgets/Info.plist;
@@ -673,7 +677,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = TipTrackControls/TipTrackControls.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = ZCW4C29TGM;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TipTrackControls/Info.plist;
@@ -704,7 +708,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = TipTrackControls/TipTrackControls.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = ZCW4C29TGM;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TipTrackControls/Info.plist;
@@ -735,7 +739,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = ZCW4C29TGM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -770,7 +774,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = ZCW4C29TGM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

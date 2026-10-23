@@ -14,6 +14,11 @@ struct LogAndTotalsView: View {
     @Query(sort: \Job.name) private var jobs: [Job]
 
     @State private var selectedDate = Date()
+    /// The date the app last filled in by itself. While the person hasn't picked another,
+    /// the form follows the clock so an app left open overnight doesn't log to yesterday.
+    @State private var automaticDate: Date?
+    /// The week and month that were current when the dashboard last checked the clock.
+    @State private var currentPeriodAnchor: (week: Date, month: Date)?
     @AppStorage("automaticJobSelection") private var automaticJobSelection = false
     @AppStorage(FeatureKeys.greeting) private var showGreeting = false
     @AppStorage(FeatureKeys.showMonthly) private var showMonthly = true
@@ -473,7 +478,32 @@ struct LogAndTotalsView: View {
         dashboardLifecycleBase
             .onChange(of: weekStart) { alignSelectedWeek() }
             .onChange(of: jobs.map { $0.id }) { updateSelectedJob() }
-            .onChange(of: scenePhase) { closeLockedPresentation() }
+            .onChange(of: scenePhase) {
+                closeLockedPresentation()
+                if scenePhase == .active { followClock() }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+                followClock()
+            }
+    }
+
+    /// Moves the draft date and the dashboard cards along with the clock, unless the
+    /// person chose a different date or period themselves.
+    private func followClock() {
+        if !isFormExpanded { refreshAutomaticDate() }
+        let now = (week: currentWeekStart, month: currentMonthStart)
+        if let anchor = currentPeriodAnchor {
+            if selectedWeekStart == anchor.week { selectedWeekStart = now.week }
+            if selectedMonth == anchor.month { selectedMonth = now.month }
+        }
+        currentPeriodAnchor = now
+    }
+
+    private func refreshAutomaticDate(force: Bool = false) {
+        guard force || automaticDate == nil || selectedDate == automaticDate else { return }
+        let now = Date()
+        automaticDate = now
+        selectedDate = now
     }
 
     private func alignSelectedWeek() {
@@ -511,6 +541,10 @@ struct LogAndTotalsView: View {
                 cashRain = nil
             }
             .onAppear {
+                if automaticDate == nil { automaticDate = selectedDate }
+                if currentPeriodAnchor == nil {
+                    currentPeriodAnchor = (week: currentWeekStart, month: currentMonthStart)
+                }
                 if selectedJob == nil {
                     selectedJob = jobs.first(where: { $0.isDefault }) ?? jobs.first
                 }
@@ -716,6 +750,7 @@ struct LogAndTotalsView: View {
         let jobColor = selectedJob.map { Color(hex: $0.colorHex) }
             ?? (colorfulTheme ? DashboardCardID.logShift.colorfulColor : Color.accentColor)
         return Button {
+            refreshAutomaticDate()
             withAnimation(sheetAnimation) {
                 isFormExpanded = true
             }
@@ -1256,6 +1291,7 @@ struct LogAndTotalsView: View {
             scheduledEventDate = nil
             manuallySelectedJob = false
             pendingReceiptImage = nil
+            refreshAutomaticDate(force: true)
 
             withAnimation(sheetAnimation) {
                 isFormExpanded = false

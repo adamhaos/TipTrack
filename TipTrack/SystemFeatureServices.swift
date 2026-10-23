@@ -9,7 +9,8 @@ enum AutomaticBackupManager {
     static func runIfNeeded(shifts: [Shift]) {
         let setting = UserDefaults.standard.object(forKey: FeatureKeys.automaticBackups) as? Bool ?? true
         guard setting else { return }
-        let stamp = Date().formatted(.iso8601.year().month().day())
+        // Named by the local day, so a late-night backup isn't filed under tomorrow.
+        let stamp = Date().formatted(Date.ISO8601FormatStyle(timeZone: .current).year().month().day())
         do {
             let folder = URL.documentsDirectory.appendingPathComponent("TipTrack Backups", isDirectory: true)
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -36,8 +37,10 @@ enum TipTrackSpotlightIndexer {
     private static let domain = "atm.TipTrack.content"
 
     static func update(jobs: [Job], shifts: [Shift]) async {
-        // On unless the person turns it off in Privacy.
-        guard UserDefaults.standard.object(forKey: FeatureKeys.spotlight) as? Bool ?? true else {
+        // On unless the person turns it off in Privacy. App Lock keeps job names and
+        // shift dates out of system search too.
+        guard UserDefaults.standard.object(forKey: FeatureKeys.spotlight) as? Bool ?? true,
+              !UserDefaults.standard.bool(forKey: FeatureKeys.appLock) else {
             try? await CSSearchableIndex.default().deleteSearchableItems(withDomainIdentifiers: [domain])
             return
         }

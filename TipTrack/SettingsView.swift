@@ -79,6 +79,24 @@ private struct DataManagementSettingsView: View {
     @AppStorage(FeatureKeys.automaticBackups) private var automaticBackups = true
     @State private var exportText = ""
 
+    /// Changes whenever anything that appears in the export changes, including edits that
+    /// arrive from iCloud while this screen is open. Much cheaper than rebuilding the CSV.
+    private var exportSignature: Int {
+        var hasher = Hasher()
+        for shift in shifts {
+            hasher.combine(shift.id)
+            hasher.combine(shift.date)
+            hasher.combine(shift.creditTip)
+            hasher.combine(shift.cashTip)
+            hasher.combine(shift.barTipOut)
+            hasher.combine(shift.hoursWorked)
+            hasher.combine(shift.hourlyRate)
+            hasher.combine(shift.notes)
+            hasher.combine(shift.job?.name)
+        }
+        return hasher.finalize()
+    }
+
     var body: some View {
         Form {
             ICloudSyncSection()
@@ -121,7 +139,7 @@ private struct DataManagementSettingsView: View {
         .protectEarnings()
         .navigationTitle("Sync, Import & Export")
         // Built once rather than on every render, which rebuilt the whole CSV each time.
-        .task(id: shifts.count) {
+        .task(id: exportSignature) {
             exportText = TipTrackCSV.exportText(for: shifts)
         }
         .sheet(isPresented: $isShowingImport) {
@@ -162,7 +180,8 @@ private struct JobsSettingsView: View {
 
             Section {
                 Button {
-                    jobToEdit = Job(name: "")
+                    // The first job becomes the default, as it does from the dashboard.
+                    jobToEdit = Job(name: "", isDefault: jobs.isEmpty)
                 } label: {
                     Label("Add New Job", systemImage: "plus.circle.fill")
                 }

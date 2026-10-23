@@ -53,6 +53,9 @@ final class ScheduleStore {
     func backgroundRefresh(container: ModelContainer) async {
         await refresh(context: container.mainContext)
     }
+    private static func digest(_ text: String) -> String {
+        SHA256.hash(data: Data(text.utf8)).map { String(format: "%02x", $0) }.joined()
+    }
     func refresh(context: ModelContext) async {
         guard !refreshing else { pendingRefresh = true; return }
         refreshing = true
@@ -68,9 +71,25 @@ final class ScheduleStore {
                 let sourceText = feeds.map { "\($0.id)|\($0.url)|\($0.filter)" }.joined(separator: "||")
                 let source = SHA256.hash(data: Data(sourceText.utf8))
                     .map { String(format: "%02x", $0) }.joined()
-                if cache.sources[job.id.uuidString] != source {
-                    events.removeAll { $0.jobID == job.id }
+                // Only shifts from feeds that were removed or whose link or filter changed are
+                // dropped, so editing one feed doesn't throw away another feed's offline copy.
+                let feedSources = Dictionary(uniqueKeysWithValues: feeds.map {
+                    ($0.id, Self.digest("\($0.url)|\($0.filter)"))
+                })
+                let jobChanged = cache.sources[job.id.uuidString] != source
+                let staleFeedIDs = Set(feeds.filter {
+                    cache.sources["\(job.id.uuidString)|\($0.id.uuidString)"] != feedSources[$0.id]
+                }.map(\.id))
+                if jobChanged {
+                    events.removeAll { event in
+                        guard event.jobID == job.id else { return false }
+                        guard let feedID = event.feedID else { return true }
+                        return feedSources[feedID] == nil || staleFeedIDs.contains(feedID)
+                    }
                     cache.refreshed[job.id.uuidString] = nil
+                }
+                for (feedID, feedSource) in feedSources {
+                    cache.sources["\(job.id.uuidString)|\(feedID.uuidString)"] = feedSource
                 }
                 var importedForJob: [ScheduledShift] = []
                 var failures: [String] = []
@@ -124,7 +143,10 @@ final class ScheduleStore {
                         ? "\(importedForJob.count) shifts from \(feeds.count) calendar\(feeds.count == 1 ? "" : "s")"
                         : "\(importedForJob.count) shifts downloaded; \(failures.count) calendar\(failures.count == 1 ? "" : "s") could not refresh"
                 } else {
-                    status[job.id] = "Could not refresh any calendar. Previously downloaded shifts are retained."
+                    cache.sources[job.id.uuidString] = source
+                    status[job.id] = events.contains { $0.jobID == job.id }
+                        ? "Could not refresh any calendar. Previously downloaded shifts are retained."
+                        : "Could not refresh any calendar."
                 }
             }
             events.sort { $0.start < $1.start }
@@ -194,8 +216,9 @@ final class ScheduleStore {
                     content.body = "Your shift at \(job.name) starts in \(startLead) minutes."
                     content.sound = .default
                     content.userInfo = ["eventID": event.id, "jobID": job.id.uuidString]
-                    let trigger = UNCalendarNotificationTrigger(dateMatching: Calendar.current.dateComponents(
-                        [.year, .month, .day, .hour, .minute, .second], from: fire), repeats: false)
+                    // An interval fires at the exact moment, even across the clocks-go-back hour
+                    // or a time-zone change, where wall-clock components would be off.
+                    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, fire.timeIntervalSinceNow), repeats: false)
                     requests.append((fire, UNNotificationRequest(identifier: "scheduled.start." + digest, content: content, trigger: trigger)))
                 }
             }
@@ -208,8 +231,9 @@ final class ScheduleStore {
                     content.body = ShiftLoggingReminderTiming.message(jobName: job.name, offsetMinutes: job.reminderDelay)
                     content.sound = .default
                     content.userInfo = ["eventID": event.id, "jobID": job.id.uuidString]
-                    let trigger = UNCalendarNotificationTrigger(dateMatching: Calendar.current.dateComponents(
-                        [.year, .month, .day, .hour, .minute, .second], from: fire), repeats: false)
+                    // An interval fires at the exact moment, even across the clocks-go-back hour
+                    // or a time-zone change, where wall-clock components would be off.
+                    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, fire.timeIntervalSinceNow), repeats: false)
                     requests.append((fire, UNNotificationRequest(identifier: "scheduled.end." + digest, content: content, trigger: trigger)))
                 }
             }

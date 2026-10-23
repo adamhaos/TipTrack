@@ -32,12 +32,13 @@ struct ContentView: View {
 
     private struct SpotlightSignature: Hashable {
         let enabled: Bool
+        let locked: Bool
         let jobs: [String]
         let shifts: [WidgetShiftSnapshot]
     }
 
     private var spotlightSignature: SpotlightSignature {
-        SpotlightSignature(enabled: spotlightEnabled,
+        SpotlightSignature(enabled: spotlightEnabled, locked: appLock,
             jobs: jobs.map { "\($0.id)|\($0.name)" }, shifts: widgetSnapshotSignature)
     }
 
@@ -105,10 +106,15 @@ struct ContentView: View {
                     Task {
                         await ScheduleStore.shared.refresh(context: context)
                         LiveShiftManager.shared.reloadSharedState()
+                        // Rolls the watch's today/week/month over after the phone was away.
+                        WatchSyncService.shared.publish()
                     }
                 } else if scenePhase == .background {
                     PrivacyManager.shared.unlocked = false
                 }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+                WatchSyncService.shared.publish()
             }
             .onOpenURL(perform: routeWidgetURL)
             .onReceive(NotificationCenter.default.publisher(for: .tipTrackIntentRoute)) { _ in

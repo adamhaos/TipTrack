@@ -70,6 +70,8 @@ nonisolated struct WatchPhoneState: Codable, Hashable, Sendable {
     var upcoming: [WatchUpcomingShift]?
     /// The end of the person's week, so the watch can list the rest of this week's shifts.
     var weekEnd: Date?
+    /// Watch logs the phone couldn't save, so the watch can say so instead of "Shift Saved".
+    var rejectedLogIDs: [UUID]?
 }
 
 nonisolated struct WatchShiftEntry: Codable, Hashable, Sendable {
@@ -86,7 +88,9 @@ nonisolated struct WatchShiftEntry: Codable, Hashable, Sendable {
 nonisolated enum WatchCommand: Codable, Hashable, Sendable {
     // Commands carry the watch's timestamp so queued delivery keeps the real start time.
     case startShift(id: UUID, jobID: UUID?, at: Date)
-    case endShift
+    // Names the shift being ended so a late, queued End can't stop a newer one.
+    // Optional so commands from older watch builds still decode.
+    case endShift(id: UUID?)
     case logShift(WatchShiftEntry)
     case undoLog(id: UUID)
 }

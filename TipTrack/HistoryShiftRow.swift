@@ -54,15 +54,16 @@ struct HistoryShiftRow: View {
         .padding(.vertical, 12)
         .foregroundStyle(.primary)
         .background {
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(Color(uiColor: .secondarySystemGroupedBackground))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 18)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(jobColor.opacity(colorScheme == .dark ? 0.08 : 0.04))
                 }
         }
-        .overlay(RoundedRectangle(cornerRadius: 18).stroke(jobColor.opacity(0.28), lineWidth: 1))
-        .contentShape(RoundedRectangle(cornerRadius: 18))
+        // strokeBorder keeps the outline inside the card so list rows don't shave its edges.
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(jobColor.opacity(0.28), lineWidth: 1))
+        .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityHint("View and edit full shift details")
     }
