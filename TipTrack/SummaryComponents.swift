@@ -123,6 +123,8 @@ struct OverflowCurrency: View {
             .monospacedDigit()
             .lineLimit(1)
             .minimumScaleFactor(0.5)
+            // Shrink only for width; a squeezed card height must not shrink the amount.
+            .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: alignment)
     }
 }
