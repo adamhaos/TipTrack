@@ -253,14 +253,35 @@ struct SevenDayDashboardStrip: View {
         }
     }
 
+    private struct DayMarks {
+        var logged: Set<Date> = []
+        var scheduled: Set<Date> = []
+    }
+
+    /// Which visible days have a logged or scheduled shift, found in one pass each
+    /// instead of searching every shift for every day.
+    private func dayMarks() -> DayMarks {
+        let start = calendar.date(byAdding: .weekOfYear, value: -1, to: weekStartDate) ?? weekStartDate
+        let end = calendar.date(byAdding: .weekOfYear, value: 2, to: weekStartDate) ?? weekStartDate
+        var marks = DayMarks()
+        for shift in shifts where shift.date >= start && shift.date < end {
+            marks.logged.insert(calendar.startOfDay(for: shift.date))
+        }
+        for event in schedule.events where event.start >= start && event.start < end {
+            marks.scheduled.insert(calendar.startOfDay(for: event.start))
+        }
+        return marks
+    }
+
     var body: some View {
-        weekPage(relativeWeek: 0)
+        let marks = dayMarks()
+        return weekPage(relativeWeek: 0, marks: marks)
             .hidden()
             .overlay {
                 GeometryReader { geometry in
                     HStack(spacing: 0) {
                         ForEach(-1...1, id: \.self) { relativeWeek in
-                            weekPage(relativeWeek: relativeWeek)
+                            weekPage(relativeWeek: relativeWeek, marks: marks)
                                 .frame(width: geometry.size.width)
                                 .accessibilityHidden(relativeWeek != 0)
                         }
@@ -312,14 +333,14 @@ struct SevenDayDashboardStrip: View {
             .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
     }
 
-    private func weekPage(relativeWeek: Int) -> some View {
+    private func weekPage(relativeWeek: Int, marks: DayMarks) -> some View {
         let days = days(relativeWeek: relativeWeek)
         return HStack(spacing: 5) {
             ForEach(days.indices, id: \.self) { index in
                 let day = days[index]
                 let dayColor = TipTrackColorPalette.rainbow[index % TipTrackColorPalette.rainbow.count]
-                let logged = shifts.contains { calendar.isDate($0.date, inSameDayAs: day) }
-                let scheduled = schedule.events.contains { calendar.isDate($0.start, inSameDayAs: day) }
+                let logged = marks.logged.contains(calendar.startOfDay(for: day))
+                let scheduled = marks.scheduled.contains(calendar.startOfDay(for: day))
 
                 Button {
                     guard !isPaging, dragOffset == 0 else { return }

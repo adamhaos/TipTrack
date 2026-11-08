@@ -59,6 +59,40 @@ extension View {
     func cardTurn(_ degrees: Double) -> some View {
         rotation3DEffect(.degrees(degrees), axis: (x: 0, y: 1, z: 0), perspective: 0.5)
     }
+
+    /// Swipe left for the next period and right for the previous one. Runs alongside
+    /// taps and vertical scrolling, and ignores drags that are mostly up or down.
+    func periodSwipe(canGoForward: Bool = true, onPrevious: @escaping () -> Void,
+                     onNext: @escaping () -> Void) -> some View {
+        simultaneousGesture(
+            DragGesture(minimumDistance: 20)
+                .onEnded { value in
+                    switch CalendarNavigation.swipe(width: value.translation.width,
+                        height: value.translation.height,
+                        predictedWidth: value.predictedEndTranslation.width) {
+                    case .next?:
+                        if canGoForward { onNext() }
+                        else { UIImpactFeedbackGenerator(style: .rigid).impactOccurred(intensity: 0.5) }
+                    case .previous?: onPrevious()
+                    case nil: break
+                    }
+                }
+        )
+    }
+
+    /// The card look shared by the dashboard stats. The shadow sits on the background
+    /// shape only, so the card's text isn't rendered offscreen to draw it.
+    func dashboardCardBackground(colorful: Bool) -> some View {
+        background {
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color(UIColor.secondarySystemGroupedBackground))
+                .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 3)
+        }
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(
+            colorful ? Color.accentColor.opacity(0.42) : Color.primary.opacity(0.13),
+            lineWidth: colorful ? 1.5 : 1.25
+        ))
+    }
 }
 
 // MARK: - Summary Components
@@ -162,6 +196,12 @@ struct IncomeRatioBar: View {
     }
 }
 
+/// The small caption over a stats card, naming the job when the dashboard shows only one.
+func periodCaption(_ period: String, jobName: String?) -> String {
+    guard let jobName, !jobName.isEmpty else { return period }
+    return "\(period) · \(jobName)"
+}
+
 // MARK: - Monthly Stats Card
 struct MonthlyStatsCard: View {
     @Environment(\.tipTrackColorful) private var colorfulTheme
@@ -169,54 +209,48 @@ struct MonthlyStatsCard: View {
     @State private var turn: Double = 0
     let shifts: [Shift]
     let month: Date
+    /// The job the dashboard is showing, or nil for all jobs.
+    var jobName: String? = nil
     let canGoForward: Bool
     let onPreviousMonth: () -> Void
     let onNextMonth: () -> Void
     let onOpenHistory: () -> Void
     let onReturnToToday: () -> Void
     
-    private var selectedMonthShifts: [Shift] {
-        shifts.filter {
-            Calendar.current.isDate($0.date, equalTo: month, toGranularity: .month)
-        }
-    }
-    
-    private var monthlyCredit: Double {
-        selectedMonthShifts.reduce(0) { $0 + $1.creditEarnings }
-    }
-    
-    private var monthlyNetCash: Double {
-        selectedMonthShifts.reduce(0) { $0 + $1.netCash }
-    }
-    
-    private var monthlyTipOut: Double {
-        selectedMonthShifts.reduce(0) { $0 + $1.barTipOut }
-    }
-    
-    private var monthlyTotal: Double {
-        monthlyCredit + monthlyNetCash
+    private struct MonthTotals {
+        var credit = 0.0
+        var netCash = 0.0
+        var tipOut = 0.0
+        var count = 0
+        var timedHours = 0.0
+        var timedEarnings = 0.0
+        var total: Double { credit + netCash }
+        var averageHourly: Double? { timedHours > 0 ? timedEarnings / timedHours : nil }
     }
 
-    private var monthlyAverageHourly: Double? {
-        let timedShifts = selectedMonthShifts.filter { ($0.hoursWorked ?? 0) > 0 }
-        let hours = timedShifts.reduce(0) { $0 + ($1.hoursWorked ?? 0) }
-        let earnings = timedShifts.reduce(0) { $0 + $1.totalEarnings }
-        return hours > 0 ? earnings / hours : nil
+    /// Adds up the month in one pass; the card reads several totals on every update.
+    private var totals: MonthTotals {
+        var totals = MonthTotals()
+        guard let interval = Calendar.current.dateInterval(of: .month, for: month) else { return totals }
+        for shift in shifts where interval.start <= shift.date && shift.date < interval.end {
+            totals.credit += shift.creditEarnings
+            totals.netCash += shift.netCash
+            totals.tipOut += shift.barTipOut
+            totals.count += 1
+            if let hours = shift.hoursWorked, hours > 0 {
+                totals.timedHours += hours
+                totals.timedEarnings += shift.totalEarnings
+            }
+        }
+        return totals
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let totals = totals
+        return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
-                Button { slide(to: .leading, onPreviousMonth) } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.subheadline.bold())
-                        .frame(width: 30, height: 30)
-                        .background(Color(UIColor.tertiarySystemFill))
-                        .clipShape(Circle())
-                }
-
                 VStack(alignment: .leading, spacing: 2) {
-                Text(month.formatted(.dateTime.month(.abbreviated).year()))
+                Text(periodCaption(month.formatted(.dateTime.month(.abbreviated).year()), jobName: jobName))
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
                     .textCase(.uppercase)
@@ -233,7 +267,7 @@ struct MonthlyStatsCard: View {
                         .foregroundStyle(.secondary)
 
                     ScrollView(.horizontal, showsIndicators: false) {
-                        RollingCurrencyText(amount: monthlyTotal)
+                        RollingCurrencyText(amount: totals.total)
                             .font(.system(size: 22, weight: .bold, design: .rounded))
                             .monospacedDigit()
                             .lineLimit(1)
@@ -244,49 +278,38 @@ struct MonthlyStatsCard: View {
                     .frame(height: 30)
                     .frame(maxWidth: .infinity)
 
-                    periodDetails(count: selectedMonthShifts.count, averageHourly: monthlyAverageHourly)
+                    periodDetails(count: totals.count, averageHourly: totals.averageHourly)
                 }
-                Button { slide(to: .trailing, onNextMonth) } label: {
-                    Image(systemName: "chevron.right")
-                        .font(.subheadline.bold())
-                        .frame(width: 30, height: 30)
-                        .background(Color(UIColor.tertiarySystemFill))
-                        .clipShape(Circle())
-                }
-                .disabled(!canGoForward)
-                .opacity(canGoForward ? 1 : 0.35)
-                .accessibilityLabel("Next month")
             }
 
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 10) {
-                    periodMetric(title: "Monthly Credit", amount: monthlyCredit, color: .blue)
-                    periodMetric(title: "Monthly Net Cash", amount: monthlyNetCash, color: .green)
+                    periodMetric(title: "Monthly Credit", amount: totals.credit, color: .blue)
+                    periodMetric(title: "Monthly Net Cash", amount: totals.netCash, color: .green)
                 }
 
-                if monthlyTipOut > 0 {
-                    Text("Tip Out: \(monthlyTipOut, format: .currency(code: "USD"))")
+                if totals.tipOut > 0 {
+                    Text("Tip Out: \(totals.tipOut, format: .currency(code: "USD"))")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
 
-                IncomeRatioBar(credit: monthlyCredit, netCash: monthlyNetCash)
+                IncomeRatioBar(credit: totals.credit, netCash: totals.netCash)
             }
         }
 
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(18)
-        .overlay(RoundedRectangle(cornerRadius: 18).stroke(
-            colorfulTheme ? Color.accentColor.opacity(0.42) : Color.primary.opacity(0.13),
-            lineWidth: colorfulTheme ? 1.5 : 1.25
-        ))
-        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 3)
+        .dashboardCardBackground(colorful: colorfulTheme)
         .cardTurn(turn)
         .contentShape(RoundedRectangle(cornerRadius: 18))
         .onTapGesture(perform: onOpenHistory)
+        .periodSwipe(canGoForward: canGoForward,
+            onPrevious: { slide(to: .leading, onPreviousMonth) },
+            onNext: { slide(to: .trailing, onNextMonth) })
         .accessibilityAction(named: "View monthly history", onOpenHistory)
+        .accessibilityAction(named: "Previous month") { slide(to: .leading, onPreviousMonth) }
+        .accessibilityAction(named: "Next month") { if canGoForward { slide(to: .trailing, onNextMonth) } }
         .overlay(alignment: .top) {
             if canGoForward {
                 ReturnToTodayBubble(period: "month") { slide(to: .trailing, onReturnToToday) }
@@ -346,6 +369,8 @@ struct CurrentWeekSummaryCard: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var turn: Double = 0
     let dateRange: String
+    /// The job the dashboard is showing, or nil for all jobs.
+    var jobName: String? = nil
     let credit: Double
     let netCash: Double
     let shiftCount: Int
@@ -363,17 +388,8 @@ struct CurrentWeekSummaryCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
-                Button { slide(to: .leading, onPreviousWeek) } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.subheadline.bold())
-                        .frame(width: 30, height: 30)
-                        .background(Color(UIColor.tertiarySystemFill))
-                        .clipShape(Circle())
-                }
-                .accessibilityLabel("Previous week")
-
                 VStack(alignment: .leading, spacing: 2) {
-                Text(dateRange)
+                Text(periodCaption(dateRange, jobName: jobName))
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
                 Text("Weekly Stats")
@@ -402,16 +418,6 @@ struct CurrentWeekSummaryCard: View {
 
                     periodDetails
                 }
-                Button { slide(to: .trailing, onNextWeek) } label: {
-                    Image(systemName: "chevron.right")
-                        .font(.subheadline.bold())
-                        .frame(width: 30, height: 30)
-                        .background(Color(UIColor.tertiarySystemFill))
-                        .clipShape(Circle())
-                }
-                .disabled(!canGoForward)
-                .opacity(canGoForward ? 1 : 0.35)
-                .accessibilityLabel("Next week")
             }
 
             VStack(alignment: .leading, spacing: 10) {
@@ -426,18 +432,17 @@ struct CurrentWeekSummaryCard: View {
 
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(Color(UIColor.secondarySystemGroupedBackground))
-        .cornerRadius(18)
-        .overlay(RoundedRectangle(cornerRadius: 18).stroke(
-            colorfulTheme ? Color.accentColor.opacity(0.42) : Color.primary.opacity(0.13),
-            lineWidth: colorfulTheme ? 1.5 : 1.25
-        ))
-        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 3)
+        .dashboardCardBackground(colorful: colorfulTheme)
         .cardTurn(turn)
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpenWeek)
+        .periodSwipe(canGoForward: canGoForward,
+            onPrevious: { slide(to: .leading, onPreviousWeek) },
+            onNext: { slide(to: .trailing, onNextWeek) })
         .accessibilityAddTraits(.isButton)
         .accessibilityHint("Opens the displayed week breakdown")
+        .accessibilityAction(named: "Previous week") { slide(to: .leading, onPreviousWeek) }
+        .accessibilityAction(named: "Next week") { if canGoForward { slide(to: .trailing, onNextWeek) } }
         .overlay(alignment: .top) {
             if canGoForward {
                 ReturnToTodayBubble(period: "week") { slide(to: .trailing, onReturnToToday) }

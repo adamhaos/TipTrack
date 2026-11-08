@@ -37,13 +37,12 @@ struct ContentView: View {
         let shifts: [WidgetShiftSnapshot]
     }
 
-    private var spotlightSignature: SpotlightSignature {
-        SpotlightSignature(enabled: spotlightEnabled, locked: appLock,
-            jobs: jobs.map { "\($0.id)|\($0.name)" }, shifts: widgetSnapshotSignature)
-    }
-
     var body: some View {
-        ZStack {
+        // Built once per update: each copy reads every shift, which adds up on older phones.
+        let snapshots = widgetSnapshotSignature
+        let spotlightSignature = SpotlightSignature(enabled: spotlightEnabled, locked: appLock,
+            jobs: jobs.map { "\($0.id)|\($0.name)" }, shifts: snapshots)
+        return ZStack {
             LogAndTotalsView()
             if appLock && !PrivacyManager.shared.unlocked {
                 AppLockView().transition(.opacity).zIndex(20)
@@ -69,13 +68,13 @@ struct ContentView: View {
                 guard (try? await Task.sleep(for: .seconds(2))) != nil else { return }
                 await TipTrackSpotlightIndexer.update(jobs: jobs, shifts: shifts)
             }
-            .task(id: widgetSnapshotSignature) {
+            .task(id: snapshots) {
                 // Rewriting the full backup CSV is costly; wait for edits to settle.
                 guard (try? await Task.sleep(for: .seconds(2))) != nil else { return }
                 AutomaticBackupManager.runIfNeeded(shifts: shifts)
             }
-            .onChange(of: widgetSnapshotSignature) {
-                WidgetSnapshotWriter.publish(snapshotShifts: widgetSnapshotSignature)
+            .onChange(of: snapshots) { _, latest in
+                WidgetSnapshotWriter.publish(snapshotShifts: latest)
                 WatchSyncService.shared.publish()
                 Task { await ScheduleStore.shared.scheduleReminders(context: context) }
             }

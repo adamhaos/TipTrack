@@ -39,6 +39,7 @@ struct ICloudSyncSection: View {
     @State private var cloudStatus = "Checking iCloud account…"
     @State private var checkingSync = false
     @State private var saveStatus: String?
+    @State private var deviceCounts: (shifts: Int, jobs: Int, scheduleLinks: Int)?
     private var sync: CloudSyncStatus { .shared }
 
     var body: some View {
@@ -67,13 +68,29 @@ struct ICloudSyncSection: View {
                     } catch {
                         saveStatus = "Could not save changes: \(error.localizedDescription)"
                     }
+                    countRecords()
                     await updateCloudStatus()
                 }
             }.disabled(checkingSync)
             if let saveStatus { Text(saveStatus).font(.caption).foregroundStyle(.secondary) }
+            if let deviceCounts {
+                LabeledContent("On this device",
+                    value: "\(deviceCounts.shifts) shifts · \(deviceCounts.jobs) jobs · \(deviceCounts.scheduleLinks) schedule links")
+                    .font(.caption)
+            }
         } header: { Text("iCloud Sync") }
-        footer: { Text("Keeps your jobs and shifts in sync across your devices through your private iCloud account.") }
-        .task { await updateCloudStatus() }
+        footer: { Text("Syncs your shifts, jobs (with their schedule links, colors and reminders) and app settings through your private iCloud account. Face ID, hidden earnings, Spotlight and daily reminders stay on each device. To check sync, compare the counts above on both devices.") }
+        .task {
+            countRecords()
+            await updateCloudStatus()
+        }
+        .onChange(of: sync.lastDownload) { countRecords() }
+    }
+
+    private func countRecords() {
+        let shifts = (try? context.fetchCount(FetchDescriptor<Shift>(predicate: #Predicate { $0.deletedAt == nil }))) ?? 0
+        let jobs = (try? context.fetch(FetchDescriptor<Job>())) ?? []
+        deviceCounts = (shifts, jobs.count, jobs.reduce(0) { $0 + $1.calendarFeeds.count })
     }
 
     private func updateCloudStatus() async {

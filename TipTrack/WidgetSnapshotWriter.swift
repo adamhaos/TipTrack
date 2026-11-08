@@ -54,7 +54,7 @@ enum WidgetSnapshotWriter {
             forKey: FeatureKeys.weekStart)
         defaults.set(hidden, forKey: "privacyEnabled")
         defaults.set(data, forKey: snapshotKey)
-        WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
+        // Reloading every kind already includes the summary widget.
         WidgetCenter.shared.reloadAllTimelines()
     }
 }

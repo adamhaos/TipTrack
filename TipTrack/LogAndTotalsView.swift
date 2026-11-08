@@ -50,6 +50,8 @@ struct LogAndTotalsView: View {
     @State private var compactCalendarHeight: CGFloat = 450
     @State private var compactHistoryHeight: CGFloat = 340
     @State private var selectedJob: Job? = nil
+    /// The job the dashboard stats show; nil shows all jobs. Starts on All each launch.
+    @State private var statsJobID: UUID?
     @State private var creditInput: String = ""
     @State private var cashInput: String = ""
     @State private var barTipOutInput: String = ""
@@ -97,25 +99,21 @@ struct LogAndTotalsView: View {
         DashboardCardID.ordered(from: storedCardOrder)
     }
 
+    private var statsJob: Job? {
+        statsJobID.flatMap { id in jobs.first { $0.id == id } }
+    }
+
+    /// Shifts behind the dashboard stats: every job, or just the one picked.
+    private var statsShifts: [Shift] {
+        guard let statsJobID else { return shifts }
+        return shifts.filter { $0.job?.id == statsJobID }
+    }
+
+    /// One pass over the shifts: the week runs from its first midnight to the next week's.
     private var currentWeekShifts: [Shift] {
-        shifts.filter { shift in
-            weekDays.contains { Calendar.preferredWeek.isDate(shift.date, inSameDayAs: $0) }
-        }
-    }
-
-    private var weeklyCreditTotal: Double {
-        currentWeekShifts.reduce(0) { $0 + $1.creditEarnings }
-    }
-
-    private var weeklyNetCashTotal: Double {
-        currentWeekShifts.reduce(0) { $0 + $1.netCash }
-    }
-
-    private var weeklyAverageHourly: Double? {
-        let timedShifts = currentWeekShifts.filter { ($0.hoursWorked ?? 0) > 0 }
-        let hours = timedShifts.reduce(0) { $0 + ($1.hoursWorked ?? 0) }
-        let earnings = timedShifts.reduce(0) { $0 + $1.totalEarnings }
-        return hours > 0 ? earnings / hours : nil
+        guard let end = Calendar.preferredWeek.date(byAdding: .day, value: 7, to: selectedWeekStart) else { return [] }
+        let start = selectedWeekStart
+        return statsShifts.filter { $0.date >= start && $0.date < end }
     }
 
     private var currentMonthStart: Date {
@@ -153,7 +151,7 @@ struct LogAndTotalsView: View {
     }
 
     private var selectedMonthForBreakdown: (key: String, date: Date, shifts: [Shift]) {
-        let monthShifts = shifts.filter {
+        let monthShifts = statsShifts.filter {
             Calendar.current.isDate($0.date, equalTo: selectedMonth, toGranularity: .month)
         }
         return (
@@ -408,6 +406,28 @@ struct LogAndTotalsView: View {
         .accessibilityHint("Share TipTrack3r")
     }
 
+    /// Picks which job the dashboard stats show. The icon fills in the job's color
+    /// while a single job is showing, and the cards name it.
+    private var statsJobMenu: some View {
+        Menu {
+            Picker("Show Stats For", selection: $statsJobID) {
+                Label("All Jobs", systemImage: "square.stack.3d.up").tag(nil as UUID?)
+                ForEach(jobs) { job in
+                    Label(job.name, systemImage: job.iconSymbolName).tag(Optional(job.id))
+                }
+            }
+        } label: {
+            Image(systemName: statsJob == nil
+                ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+                .foregroundStyle(isFormExpanded ? Color.gray
+                    : statsJob.map { Color(hex: $0.colorHex) }
+                    ?? (colorfulTheme ? Color.purple : Color.accentColor))
+        }
+        .disabled(isFormExpanded)
+        .accessibilityLabel("Show stats for")
+        .accessibilityValue(statsJob?.name ?? "All Jobs")
+    }
+
     private var dashboardPresentation: some View {
             dashboardLayout
             .appTitleToolbar(appTitleMenu)
@@ -425,6 +445,7 @@ struct LogAndTotalsView: View {
                     .disabled(isFormExpanded)
                 }
                 ToolbarItemGroup(placement: .topBarTrailing) {
+                    if jobs.count > 1 { statsJobMenu }
                     Button { openTopPanel { isShowingHistory = true } } label: {
                         Image(systemName: "clock.arrow.circlepath")
                             .foregroundStyle(isFormExpanded ? Color.gray : (colorfulTheme ? Color.orange : Color.accentColor))
@@ -511,6 +532,7 @@ struct LogAndTotalsView: View {
     }
 
     private func updateSelectedJob() {
+        if let statsJobID, !jobs.contains(where: { $0.id == statsJobID }) { self.statsJobID = nil }
         let selectedID = selectedJob?.id
         if selectedID == nil || !jobs.contains(where: { $0.id == selectedID }) {
             selectedJob = jobs.first(where: { $0.isDefault }) ?? jobs.first
@@ -622,12 +644,12 @@ struct LogAndTotalsView: View {
     private func dashboardCard(_ card: DashboardCardID) -> some View {
         switch card {
         case .greeting:
-            DashboardGreeting(jobs: jobs, shifts: shifts, showsGreeting: showGreeting)
+            DashboardGreeting(jobs: jobs, shifts: statsShifts, showsGreeting: showGreeting)
                 .protectEarnings()
                 .padding(.vertical, 2)
         case .calendar:
             if showCalendarStrip {
-                SevenDayDashboardStrip(shifts: shifts) { day in
+                SevenDayDashboardStrip(shifts: statsShifts) { day in
                     openTopPanel {
                         calendarInitialDate = day
                         isShowingCalendar = true
@@ -663,8 +685,9 @@ struct LogAndTotalsView: View {
 
     private var monthlySummaryView: some View {
         MonthlyStatsCard(
-            shifts: shifts,
+            shifts: statsShifts,
             month: selectedMonth,
+            jobName: statsJob?.name,
             canGoForward: canMoveToNextMonth,
             onPreviousMonth: { moveSelectedMonth(by: -1) },
             onNextMonth: { moveSelectedMonth(by: 1) },
@@ -731,12 +754,16 @@ struct LogAndTotalsView: View {
     }
     
     private var totalsSummaryView: some View {
-        CurrentWeekSummaryCard(
+        let week = currentWeekShifts
+        let timed = week.filter { ($0.hoursWorked ?? 0) > 0 }
+        let hours = timed.reduce(0) { $0 + ($1.hoursWorked ?? 0) }
+        return CurrentWeekSummaryCard(
             dateRange: currentWeekDateRange,
-            credit: weeklyCreditTotal,
-            netCash: weeklyNetCashTotal,
-            shiftCount: currentWeekShifts.count,
-            averageHourly: weeklyAverageHourly,
+            jobName: statsJob?.name,
+            credit: week.reduce(0) { $0 + $1.creditEarnings },
+            netCash: week.reduce(0) { $0 + $1.netCash },
+            shiftCount: week.count,
+            averageHourly: hours > 0 ? timed.reduce(0) { $0 + $1.totalEarnings } / hours : nil,
             canGoForward: canMoveToNextWeek,
             onPreviousWeek: { moveSelectedWeek(by: -1) },
             onNextWeek: { moveSelectedWeek(by: 1) },
