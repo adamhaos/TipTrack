@@ -11,7 +11,6 @@ struct ShiftCalendarView: View {
     @Query(filter: #Predicate<Shift> { $0.deletedAt == nil }, sort: \Shift.date) private var shifts: [Shift]
     @Query(sort: \Job.name) private var jobs: [Job]
     @State private var month: Date
-    @State private var turn: Double = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var selected: Date
     @State private var selectedJob: UUID?
@@ -121,7 +120,7 @@ struct ShiftCalendarView: View {
                             Button {
                                 let today = Calendar.current.startOfDay(for: Date())
                                 let todayMonth = Calendar.current.dateInterval(of: .month, for: today)?.start ?? today
-                                CardTurn.perform($turn, forward: todayMonth > month, reduceMotion: reduceMotion) {
+                                CardTurn.switchInPlace {
                                     month = todayMonth
                                     selected = today
                                 }
@@ -139,7 +138,6 @@ struct ShiftCalendarView: View {
                             monthEarnings
                         }
                         .frame(maxWidth: .infinity)
-                        .cardTurn(turn)
                         .accessibilityElement(children: .combine)
                         .accessibilityAction(named: "Previous month") { move(-1) }
                         .accessibilityAction(named: "Next month") { move(1) }
@@ -162,7 +160,6 @@ struct ShiftCalendarView: View {
                         }
                     }
                     .id(month)
-                    .cardTurn(turn)
 
                         if selectedJob == nil && jobs.count > 1 {
                             jobColorLegend
@@ -262,7 +259,7 @@ struct ShiftCalendarView: View {
 
     private func move(_ amount: Int) {
         guard let newMonth = Calendar.current.date(byAdding: .month, value: amount, to: month) else { return }
-        CardTurn.perform($turn, forward: amount > 0, reduceMotion: reduceMotion) {
+        CardTurn.switchInPlace {
             month = newMonth
             selected = CalendarNavigation.selectedDay(in: newMonth, matching: selected, calendar: .current)
         }
