@@ -655,7 +655,7 @@ struct LogAndTotalsView: View {
         }
         .sheet(isPresented: $isShowingSettingsSheet) {
             SettingsView(onClose: { isShowingSettingsSheet = false })
-                .presentationSizing(.form)
+                .formSheetSizing()
         }
     }
 
@@ -1839,6 +1839,18 @@ private extension View {
             toolbar {
                 ToolbarItem(placement: .topBarLeading) { title }
             }
+        }
+    }
+}
+
+private extension View {
+    // Form-sized sheet on iPad where available; older systems keep the default sheet.
+    @ViewBuilder
+    func formSheetSizing() -> some View {
+        if #available(iOS 18.0, *) {
+            presentationSizing(.form)
+        } else {
+            self
         }
     }
 }
