@@ -72,6 +72,8 @@ struct LogAndTotalsView: View {
     @State private var isAddingFirstJob = false
     @State private var isShowingSettings = false
     @State private var isShowingHistory = false
+    /// The side the next Calendar/History page slides in from.
+    @State private var panelPageEdge: Edge = .trailing
     @State private var isShowingCurrentWeek = false
     @State private var isShowingSelectedMonth = false
     @State private var selectedMonth = Calendar.current.dateInterval(of: .month, for: Date())?.start ?? Date()
@@ -234,10 +236,51 @@ struct LogAndTotalsView: View {
             WeeklyHistoryView(onClose: closeTopPanel, isExpanded: isTopPanelExpanded,
                 onCompactHeightChange: { compactHistoryHeight = $0 },
                 onRequestExpand: { withAnimation(sheetAnimation) { isTopPanelExpanded = true } })
+                .transition(reduceMotion ? .opacity : .push(from: panelPageEdge))
         } else if isShowingCalendar {
             ShiftCalendarView(initialDate: calendarInitialDate, onClose: closeTopPanel, showsDetails: isTopPanelExpanded, onCompactHeightChange: { compactCalendarHeight = $0 }, onShowDetails: {
                 withAnimation(sheetAnimation) { isTopPanelExpanded = true }
             })
+            .transition(reduceMotion ? .opacity : .push(from: panelPageEdge))
+        }
+    }
+
+    /// Calendar and History share one panel: Calendar first, History to its right.
+    private func showPanelPage(history: Bool) {
+        guard isShowingHistory != history, isShowingHistory || isShowingCalendar, !isClosingTopPanel else { return }
+        // The leaving page reads the edge too, so set it one update before the swap.
+        panelPageEdge = history ? .trailing : .leading
+        Task { @MainActor in
+            await Task.yield()
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            withAnimation(reduceMotion ? nil : .smooth(duration: 0.3)) {
+                isShowingHistory = history
+                isShowingCalendar = !history
+            }
+        }
+    }
+
+    /// Two labeled dots above the handle; tapping one also switches pages.
+    private var panelPageSwitcher: some View {
+        HStack(spacing: 14) {
+            ForEach([false, true], id: \.self) { history in
+                let selected = isShowingHistory == history
+                Button { showPanelPage(history: history) } label: {
+                    HStack(spacing: 5) {
+                        Circle()
+                            .fill(selected ? Color.accentColor : Color.secondary.opacity(0.35))
+                            .frame(width: 6, height: 6)
+                        Text(history ? "History" : "Calendar")
+                            .font(.system(size: 12, weight: selected ? .semibold : .medium))
+                            .foregroundStyle(selected ? Color.primary : Color.secondary)
+                    }
+                    .padding(.horizontal, 6)
+                    .frame(height: 22)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+            }
         }
     }
 
@@ -283,12 +326,28 @@ struct LogAndTotalsView: View {
             }
             .overlay(alignment: .top) {
                 if isShowingTopPanel {
-                    let compactHeight = min(isShowingCalendar ? compactCalendarHeight : compactHistoryHeight, geometry.size.height)
+                    // Room for the Calendar/History switcher under the page.
+                    let compactHeight = min((isShowingCalendar ? compactCalendarHeight : compactHistoryHeight) + 24, geometry.size.height)
                     let expanded = isShowingSettings || isTopPanelExpanded
                     let panelHeight = expanded ? geometry.size.height : compactHeight
                     VStack(spacing: 0) {
                         topPanelContent
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .clipped()
+                            // Sideways swipes move between Calendar (left) and History (right).
+                            .simultaneousGesture(
+                                DragGesture(minimumDistance: 20)
+                                    .onEnded { value in
+                                        guard !isShowingSettings else { return }
+                                        switch CalendarNavigation.swipe(width: value.translation.width,
+                                            height: value.translation.height,
+                                            predictedWidth: value.predictedEndTranslation.width) {
+                                        case .next?: showPanelPage(history: true)
+                                        case .previous?: showPanelPage(history: false)
+                                        case nil: break
+                                        }
+                                    }
+                            )
                             .simultaneousGesture(
                                 DragGesture(minimumDistance: 20, coordinateSpace: .named("topPanelDragSpace"))
                                     .onChanged { value in
@@ -315,6 +374,8 @@ struct LogAndTotalsView: View {
                                 including: expanded ? .subviews : .all
                             )
                         if !isShowingSettings {
+                            panelPageSwitcher
+                                .padding(.top, 2)
                             VStack(spacing: 5) {
                                 Capsule().fill(Color.secondary.opacity(0.35)).frame(width: 40, height: 4)
                                 Text(expanded ? "Swipe up to close" : (isShowingHistory
@@ -446,12 +507,6 @@ struct LogAndTotalsView: View {
                 }
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     if jobs.count > 1 { statsJobMenu }
-                    Button { openTopPanel { isShowingHistory = true } } label: {
-                        Image(systemName: "clock.arrow.circlepath")
-                            .foregroundStyle(isFormExpanded ? Color.gray : (colorfulTheme ? Color.orange : Color.accentColor))
-                    }
-                        .disabled(isFormExpanded)
-                        .accessibilityLabel("Shift History")
                     Button {
                         openTopPanel {
                             calendarInitialDate = Date()
@@ -462,7 +517,7 @@ struct LogAndTotalsView: View {
                             .foregroundStyle(isFormExpanded ? Color.gray : (colorfulTheme ? Color.cyan : Color.accentColor))
                     }
                         .disabled(isFormExpanded)
-                        .accessibilityLabel("Shift Calendar")
+                        .accessibilityLabel("Calendar and History")
                 }
             }
             .sheet(isPresented: $isAddingFirstJob) {

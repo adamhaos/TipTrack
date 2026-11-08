@@ -133,14 +133,26 @@ struct ShiftCalendarView: View {
                             .disabled(!showsReturnToToday)
                             .accessibilityLabel("Return calendar to today")
                         }
-                        VStack(spacing: 3) {
-                            monthTitle
-                            monthEarnings
+                        // Months change with the arrows; a sideways swipe switches to History.
+                        HStack(spacing: 10) {
+                            Button { move(-1) } label: {
+                                Image(systemName: "chevron.left").font(.subheadline.weight(.semibold))
+                                    .frame(width: 34, height: 34)
+                                    .background(Color.secondary.opacity(0.08), in: Circle())
+                            }.accessibilityLabel("Previous month")
+                            Spacer(minLength: 0)
+                            VStack(spacing: 3) {
+                                monthTitle
+                                monthEarnings
+                            }
+                            Spacer(minLength: 0)
+                            Button { move(1) } label: {
+                                Image(systemName: "chevron.right").font(.subheadline.weight(.semibold))
+                                    .frame(width: 34, height: 34)
+                                    .background(Color.secondary.opacity(0.08), in: Circle())
+                            }.accessibilityLabel("Next month")
                         }
-                        .frame(maxWidth: .infinity)
-                        .accessibilityElement(children: .combine)
-                        .accessibilityAction(named: "Previous month") { move(-1) }
-                        .accessibilityAction(named: "Next month") { move(1) }
+                        .buttonStyle(.borderless)
                     Grid(horizontalSpacing: 5, verticalSpacing: 5) {
                         GridRow {
                             ForEach(weekdayColumns, id: \.self) { weekdayIndex in
@@ -166,8 +178,6 @@ struct ShiftCalendarView: View {
                         }
                     }
                     .padding(.vertical, 2)
-                    .contentShape(Rectangle())
-                    .periodSwipe(onPrevious: { move(-1) }, onNext: { move(1) })
                     .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
                         if !showsDetails { onCompactHeightChange?(height + 128) }
                     }
