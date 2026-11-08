@@ -526,7 +526,9 @@ struct LogAndTotalsView: View {
 
                 // Keep the form mounted so its height is measured before it slides in.
                 logEntrySheet(
-                    maxHeight: geometry.size.height * (wide ? 0.9 : 0.94),
+                    // The centered card may use nearly the whole safe height, so a short iPad
+                    // (mini in landscape) still shows the Save button without scrolling.
+                    maxHeight: wide ? geometry.size.height - 16 : geometry.size.height * 0.94,
                     bottomInset: wide ? 0 : geometry.safeAreaInsets.bottom,
                     centered: wide
                 )
