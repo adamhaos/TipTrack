@@ -6,6 +6,8 @@ struct ShiftCalendarView: View {
     var showsDetails = true
     var onCompactHeightChange: ((CGFloat) -> Void)?
     var onShowDetails: (() -> Void)?
+    /// Shown as an always-open iPad pane: no Done button and no title bar on the first page.
+    var embedded = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Query(filter: #Predicate<Shift> { $0.deletedAt == nil }, sort: \Shift.date) private var shifts: [Shift]
@@ -24,7 +26,8 @@ struct ShiftCalendarView: View {
     @AppStorage(FeatureKeys.weekStart) private var weekStart = 2
     @Bindable private var schedule = ScheduleStore.shared
 
-    init(initialDate: Date = Date(), onClose: (() -> Void)? = nil, showsDetails: Bool = true, onCompactHeightChange: ((CGFloat) -> Void)? = nil, onShowDetails: (() -> Void)? = nil) {
+    init(initialDate: Date = Date(), onClose: (() -> Void)? = nil, showsDetails: Bool = true, onCompactHeightChange: ((CGFloat) -> Void)? = nil, onShowDetails: (() -> Void)? = nil, embedded: Bool = false) {
+        self.embedded = embedded
         self.onShowDetails = onShowDetails
         self.onCompactHeightChange = onCompactHeightChange
         self.showsDetails = showsDetails
@@ -243,7 +246,12 @@ struct ShiftCalendarView: View {
             .onChange(of: selectedJob) { dayPage = 0 }
             .protectEarnings()
             .navigationTitle("Shift Calendar").navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { close() } } }
+            .toolbar {
+                if !embedded {
+                    ToolbarItem(placement: .confirmationAction) { Button("Done") { close() } }
+                }
+            }
+            .toolbar(embedded ? .hidden : .automatic, for: .navigationBar)
             .task { await schedule.refresh(context: context) }
 
         }

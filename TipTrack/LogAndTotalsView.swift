@@ -8,6 +8,7 @@ struct LogAndTotalsView: View {
     @Environment(\.tipTrackColorful) private var colorfulTheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @AppStorage(FeatureKeys.appLock) private var appLock = false
     @AppStorage(FeatureKeys.weekStart) private var weekStart = 2
     @Query(filter: #Predicate<Shift> { $0.deletedAt == nil }, sort: \Shift.date, order: .forward) private var shifts: [Shift]
@@ -74,6 +75,13 @@ struct LogAndTotalsView: View {
     @State private var isShowingHistory = false
     /// The side the next Calendar/History page slides in from.
     @State private var panelPageEdge: Edge = .trailing
+    /// iPad with room for two columns: dashboard on the left, Calendar/History always open
+    /// on the right, Settings as a sheet and Log Shift as a centered card.
+    @State private var isWideLayout = false
+    @State private var sidePaneShowsHistory = false
+    /// Changes when something asks the side calendar to jump to a day, so it starts fresh there.
+    @State private var sideCalendarID = UUID()
+    @State private var isShowingSettingsSheet = false
     @State private var isShowingCurrentWeek = false
     @State private var isShowingSelectedMonth = false
     @State private var selectedMonth = Calendar.current.dateInterval(of: .month, for: Date())?.start ?? Date()
@@ -260,6 +268,200 @@ struct LogAndTotalsView: View {
         }
     }
 
+    /// True on an iPad window wide enough for two columns. iPhone, and iPad in Split View
+    /// or Slide Over, keep the phone layout.
+    private func usesWideLayout(width: CGFloat) -> Bool {
+        UIDevice.current.userInterfaceIdiom == .pad && horizontalSizeClass == .regular && width >= 700
+    }
+
+    private func dashboardColumnWidth(totalWidth: CGFloat) -> CGFloat {
+        min(max(totalWidth * 0.4, 380), 460)
+    }
+
+    /// Opens the calendar on a day: the side pane on a wide iPad, the top panel otherwise.
+    private func presentCalendar(on day: Date = Date()) {
+        if isWideLayout {
+            calendarInitialDate = day
+            sideCalendarID = UUID()
+            showSidePage(history: false)
+        } else {
+            openTopPanel {
+                calendarInitialDate = day
+                isShowingCalendar = true
+            }
+        }
+    }
+
+    private func presentHistory() {
+        if isWideLayout {
+            showSidePage(history: true)
+        } else {
+            openTopPanel { isShowingHistory = true }
+        }
+    }
+
+    private func presentSettings() {
+        if isWideLayout {
+            isShowingSettingsSheet = true
+        } else {
+            openTopPanel { isShowingSettings = true }
+        }
+    }
+
+    private func showSidePage(history: Bool) {
+        guard sidePaneShowsHistory != history else { return }
+        panelPageEdge = history ? .trailing : .leading
+        Task { @MainActor in
+            await Task.yield()
+            withAnimation(reduceMotion ? nil : .smooth(duration: 0.3)) {
+                sidePaneShowsHistory = history
+            }
+        }
+    }
+
+    /// Switching between the two layouts (rotating, resizing a window) moves an open
+    /// panel to its place in the new layout instead of leaving it stranded.
+    private func layoutChanged(toWide wide: Bool) {
+        guard wide != isWideLayout else { return }
+        isWideLayout = wide
+        guard wide, isShowingTopPanel else { return }
+        let settings = isShowingSettings
+        let history = isShowingHistory
+        var transaction = Transaction(animation: nil)
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            isShowingSettings = false
+            isShowingHistory = false
+            isShowingCalendar = false
+            isTopPanelExpanded = false
+            isClosingTopPanel = false
+            topPanelDragOffset = 0
+            topPanelDismissOffset = 0
+            pendingTopPanelOpen = nil
+            if !settings { sidePaneShowsHistory = history }
+        }
+        if settings { isShowingSettingsSheet = true }
+    }
+
+    /// The always-open right side on a wide iPad.
+    private var sidePane: some View {
+        VStack(spacing: 0) {
+            Picker("Show", selection: Binding(
+                get: { sidePaneShowsHistory },
+                set: { showSidePage(history: $0) }
+            )) {
+                Text("Calendar").tag(false)
+                Text("History").tag(true)
+            }
+            .pickerStyle(.segmented)
+            .frame(maxWidth: 320)
+            .padding(.horizontal)
+            .padding(.top, 6)
+            .padding(.bottom, 8)
+
+            ZStack {
+                if sidePaneShowsHistory {
+                    WeeklyHistoryView(isExpanded: true, embedded: true)
+                        .transition(reduceMotion ? .opacity : .push(from: panelPageEdge))
+                } else {
+                    ShiftCalendarView(initialDate: calendarInitialDate, embedded: true)
+                        .id(sideCalendarID)
+                        .transition(reduceMotion ? .opacity : .push(from: panelPageEdge))
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
+            // Same sideways swipe as the iPhone panel: Calendar on the left, History on the right.
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 20)
+                    .onEnded { value in
+                        switch CalendarNavigation.swipe(width: value.translation.width,
+                            height: value.translation.height,
+                            predictedWidth: value.predictedEndTranslation.width) {
+                        case .next?: showSidePage(history: true)
+                        case .previous?: showSidePage(history: false)
+                        case nil: break
+                        }
+                    }
+            )
+        }
+        .background(Color(uiColor: .systemGroupedBackground))
+    }
+
+    @ViewBuilder
+    private func mainContent(wide: Bool, width: CGFloat) -> some View {
+        if wide {
+            HStack(spacing: 0) {
+                NavigationStack {
+                    dashboardLifecycle
+                }
+                .frame(width: dashboardColumnWidth(totalWidth: width))
+                Divider()
+                    .ignoresSafeArea()
+                sidePane
+            }
+        } else {
+            NavigationStack {
+                dashboardLifecycle
+            }
+        }
+    }
+
+    private func openLogForm() {
+        refreshAutomaticDate()
+        withAnimation(sheetAnimation) {
+            isFormExpanded = true
+        }
+    }
+
+    private var entryFieldOrder: [Field] {
+        hourlyPayEnabled ? [.credit, .cash, .barTipOut, .hoursWorked, .hourlyRate]
+            : [.credit, .cash, .barTipOut, .hoursWorked]
+    }
+
+    private func moveActiveField(by step: Int) {
+        let order = entryFieldOrder
+        let index = order.firstIndex(of: activeField) ?? 0
+        isEditingNotes = false
+        activeField = order[(index + step + order.count) % order.count]
+    }
+
+    /// Hardware keyboard support (iPad Magic Keyboard and the like): ⌘N logs a shift; in the
+    /// form, digits and . type into the selected field, Delete erases, Tab and the arrows move
+    /// between fields, Return saves and Esc closes. Off while a note is being typed.
+    private var hardwareKeyboardCommands: some View {
+        ZStack {
+            if isFormExpanded {
+                if !isEditingNotes {
+                    ForEach(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."], id: \.self) { key in
+                        Button(key) { handleNumpadInput(key) }
+                            .keyboardShortcut(KeyEquivalent(Character(key)), modifiers: [])
+                    }
+                    Button("Delete") { handleNumpadInput("⌫") }
+                        .keyboardShortcut(.delete, modifiers: [])
+                    Button("Next Field") { moveActiveField(by: 1) }
+                        .keyboardShortcut(.tab, modifiers: [])
+                    Button("Previous Field") { moveActiveField(by: -1) }
+                        .keyboardShortcut(.tab, modifiers: .shift)
+                    Button("Next Field") { moveActiveField(by: 1) }
+                        .keyboardShortcut(.downArrow, modifiers: [])
+                    Button("Previous Field") { moveActiveField(by: -1) }
+                        .keyboardShortcut(.upArrow, modifiers: [])
+                    Button("Save Shift") { if isFormHasData { saveShift() } }
+                        .keyboardShortcut(.return, modifiers: [])
+                }
+                Button("Close") { dismissLogForm() }
+                    .keyboardShortcut(.escape, modifiers: [])
+            } else if !isShowingTopPanel && !isShowingSettingsSheet {
+                Button("Log Shift") { openLogForm() }
+                    .keyboardShortcut("n", modifiers: .command)
+            }
+        }
+        .frame(width: 0, height: 0)
+        .opacity(0)
+        .accessibilityHidden(true)
+    }
+
     /// Two labeled dots above the handle; tapping one also switches pages.
     private var panelPageSwitcher: some View {
         HStack(spacing: 14) {
@@ -286,10 +488,11 @@ struct LogAndTotalsView: View {
 
     var body: some View {
         GeometryReader { geometry in
+            let wide = usesWideLayout(width: geometry.size.width)
             ZStack(alignment: .bottom) {
-                NavigationStack {
-                    dashboardLifecycle
-                }
+                hardwareKeyboardCommands
+
+                mainContent(wide: wide, width: geometry.size.width)
                 .allowsHitTesting(!isFormExpanded && (!isShowingTopPanel || isClosingTopPanel))
                 .accessibilityHidden(isFormExpanded || isShowingTopPanel)
 
@@ -308,9 +511,12 @@ struct LogAndTotalsView: View {
 
                 // Keep the form mounted so its height is measured before it slides in.
                 logEntrySheet(
-                    maxHeight: geometry.size.height * 0.94,
-                    bottomInset: geometry.safeAreaInsets.bottom
+                    maxHeight: geometry.size.height * (wide ? 0.9 : 0.94),
+                    bottomInset: wide ? 0 : geometry.safeAreaInsets.bottom,
+                    centered: wide
                 )
+                // On a wide iPad the form floats as a centered card instead of a bottom sheet.
+                .frame(maxHeight: wide ? .infinity : nil)
                 .offset(y: isFormExpanded ? max(0, formSheetDragOffset) : geometry.size.height + 100)
                 .allowsHitTesting(isFormExpanded)
                 .accessibilityHidden(!isFormExpanded)
@@ -325,7 +531,7 @@ struct LogAndTotalsView: View {
                 }
             }
             .overlay(alignment: .top) {
-                if isShowingTopPanel {
+                if isShowingTopPanel && !wide {
                     // Room for the Calendar/History switcher under the page.
                     let compactHeight = min((isShowingCalendar ? compactCalendarHeight : compactHistoryHeight) + 24, geometry.size.height)
                     let expanded = isShowingSettings || isTopPanelExpanded
@@ -445,6 +651,11 @@ struct LogAndTotalsView: View {
             .animation(sheetAnimation, value: isTopPanelExpanded)
             .animation(sheetAnimation, value: compactCalendarHeight)
             .animation(sheetAnimation, value: compactHistoryHeight)
+            .onChange(of: wide, initial: true) { _, newValue in layoutChanged(toWide: newValue) }
+        }
+        .sheet(isPresented: $isShowingSettingsSheet) {
+            SettingsView(onClose: { isShowingSettingsSheet = false })
+                .presentationSizing(.form)
         }
     }
 
@@ -497,7 +708,7 @@ struct LogAndTotalsView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        openTopPanel { isShowingSettings = true }
+                        presentSettings()
                     } label: {
                         Image(systemName: "gearshape")
                             .imageScale(.large)
@@ -507,17 +718,17 @@ struct LogAndTotalsView: View {
                 }
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     if jobs.count > 1 { statsJobMenu }
-                    Button {
-                        openTopPanel {
-                            calendarInitialDate = Date()
-                            isShowingCalendar = true
+                    // The calendar is always open beside the dashboard on a wide iPad.
+                    if !isWideLayout {
+                        Button {
+                            presentCalendar()
+                        } label: {
+                            Image(systemName: "calendar")
+                                .foregroundStyle(isFormExpanded ? Color.gray : (colorfulTheme ? Color.cyan : Color.accentColor))
                         }
-                    } label: {
-                        Image(systemName: "calendar")
-                            .foregroundStyle(isFormExpanded ? Color.gray : (colorfulTheme ? Color.cyan : Color.accentColor))
+                            .disabled(isFormExpanded)
+                            .accessibilityLabel("Calendar and History")
                     }
-                        .disabled(isFormExpanded)
-                        .accessibilityLabel("Calendar and History")
                 }
             }
             .sheet(isPresented: $isAddingFirstJob) {
@@ -599,6 +810,7 @@ struct LogAndTotalsView: View {
     private func closeLockedPresentation() {
         guard scenePhase == .background && appLock else { return }
         isShowingSettings = false
+        isShowingSettingsSheet = false
         isShowingCalendar = false
         isShowingHistory = false
         isShowingCurrentWeek = false
@@ -705,10 +917,7 @@ struct LogAndTotalsView: View {
         case .calendar:
             if showCalendarStrip {
                 SevenDayDashboardStrip(shifts: statsShifts) { day in
-                    openTopPanel {
-                        calendarInitialDate = day
-                        isShowingCalendar = true
-                    }
+                    presentCalendar(on: day)
                 }
             }
         case .monthly:
@@ -832,10 +1041,7 @@ struct LogAndTotalsView: View {
         let jobColor = selectedJob.map { Color(hex: $0.colorHex) }
             ?? (colorfulTheme ? DashboardCardID.logShift.colorfulColor : Color.accentColor)
         return Button {
-            refreshAutomaticDate()
-            withAnimation(sheetAnimation) {
-                isFormExpanded = true
-            }
+            openLogForm()
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "plus.circle.fill")
@@ -860,11 +1066,13 @@ struct LogAndTotalsView: View {
         }
     }
 
-    private func logEntrySheet(maxHeight: CGFloat, bottomInset: CGFloat) -> some View {
+    private func logEntrySheet(maxHeight: CGFloat, bottomInset: CGFloat, centered: Bool = false) -> some View {
         let measuredHeight = formSheetContentHeight > 0 ? formSheetContentHeight + 24 : maxHeight
         let sheetHeight = min(max(measuredHeight, 280), maxHeight)
+        let corner: CGFloat = 28
         let sheetShape = UnevenRoundedRectangle(
-            cornerRadii: .init(topLeading: 28, topTrailing: 28),
+            cornerRadii: .init(topLeading: corner, bottomLeading: centered ? corner : 0,
+                bottomTrailing: centered ? corner : 0, topTrailing: corner),
             style: .continuous
         )
 
@@ -929,7 +1137,7 @@ struct LogAndTotalsView: View {
             }
         }
         .frame(height: sheetHeight + bottomInset)
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: centered ? 480 : .infinity)
         .background(Color(uiColor: .systemGroupedBackground), in: sheetShape)
         .overlay {
             sheetShape
@@ -1460,7 +1668,7 @@ struct LogAndTotalsView: View {
         guard AppRoute.shared.historyRequest != nil else { return }
         closeTopPanel()
         dismissLogForm()
-        openTopPanel { isShowingHistory = true }
+        presentHistory()
         AppRoute.shared.historyRequest = nil
     }
 
@@ -1468,10 +1676,7 @@ struct LogAndTotalsView: View {
         guard AppRoute.shared.calendarRequest != nil else { return }
         closeTopPanel()
         dismissLogForm()
-        openTopPanel {
-            calendarInitialDate = Date()
-            isShowingCalendar = true
-        }
+        presentCalendar()
         AppRoute.shared.calendarRequest = nil
     }
 
