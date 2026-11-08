@@ -918,6 +918,8 @@ struct LogAndTotalsView: View {
             .overlay(alignment: .bottom) {
                 if showUndoToast && !isFormExpanded {
                     undoToastView
+                        // On a wide iPad Log Shift sits at the bottom; keep the toast above it.
+                        .padding(.bottom, isWideLayout && showLogShift ? 76 : 0)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
