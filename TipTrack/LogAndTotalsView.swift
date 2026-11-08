@@ -932,6 +932,8 @@ struct LogAndTotalsView: View {
             }
         case .logShift:
             if showLogShift {
+                // A tall iPad column would leave a gap under the button; keep it at the bottom.
+                if isWideLayout { Spacer(minLength: 0) }
                 expandFormButton
                     .padding(.vertical, 6)
                     .transition(.scale(scale: 0.98).combined(with: .opacity))
@@ -1848,7 +1850,7 @@ private extension View {
     @ViewBuilder
     func formSheetSizing() -> some View {
         if #available(iOS 18.0, *) {
-            presentationSizing(.form)
+            presentationSizing(.page)
         } else {
             self
         }
