@@ -79,6 +79,31 @@ extension View {
     }
 }
 
+/// A dollar amount at a fixed size. It only becomes a sideways scroller when it is too
+/// wide to fit, so on most cards it holds still under a swipe.
+struct OverflowCurrency: View {
+    let amount: Double
+    let size: CGFloat
+    let alignment: Alignment
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            label
+            ScrollView(.horizontal, showsIndicators: false) { label }
+                .defaultScrollAnchor(alignment == .trailing ? .trailing : .leading)
+        }
+        .frame(maxWidth: .infinity, alignment: alignment)
+    }
+
+    private var label: some View {
+        RollingCurrencyText(amount: amount)
+            .font(.system(size: size, weight: .bold, design: .rounded))
+            .monospacedDigit()
+            .lineLimit(1)
+            .fixedSize()
+    }
+}
+
 // MARK: - Summary Components
 struct IncomeRatioBar: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -253,17 +278,8 @@ struct MonthlyStatsCard: View {
                         .font(.caption2.bold())
                         .foregroundStyle(.secondary)
 
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        RollingCurrencyText(amount: totals.total)
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
-                            .monospacedDigit()
-                            .lineLimit(1)
-                            .fixedSize()
-                    }
-                    .defaultScrollAnchor(.trailing)
-                    .scrollBounceBehavior(.basedOnSize)
-                    .frame(height: 30)
-                    .frame(maxWidth: .infinity)
+                    OverflowCurrency(amount: totals.total, size: 22, alignment: .trailing)
+                        .frame(height: 30)
 
                     periodDetails(count: totals.count, averageHourly: totals.averageHourly)
                 }
@@ -330,14 +346,7 @@ struct MonthlyStatsCard: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.65)
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                RollingCurrencyText(amount: amount)
-                .font(.system(size: 20, weight: .bold, design: .rounded))
-                .monospacedDigit()
-                .lineLimit(1)
-                .fixedSize()
-            }
-            .scrollBounceBehavior(.basedOnSize)
+            OverflowCurrency(amount: amount, size: 20, alignment: .leading)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -389,17 +398,8 @@ struct CurrentWeekSummaryCard: View {
                         .font(.caption2.bold())
                         .foregroundStyle(.secondary)
 
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        RollingCurrencyText(amount: total)
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
-                            .monospacedDigit()
-                            .lineLimit(1)
-                            .fixedSize()
-                    }
-                    .defaultScrollAnchor(.trailing)
-                    .scrollBounceBehavior(.basedOnSize)
-                    .frame(height: 30)
-                    .frame(maxWidth: .infinity)
+                    OverflowCurrency(amount: total, size: 22, alignment: .trailing)
+                        .frame(height: 30)
 
                     periodDetails
                 }
@@ -447,14 +447,7 @@ struct CurrentWeekSummaryCard: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.65)
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                RollingCurrencyText(amount: amount)
-                .font(.system(size: 20, weight: .bold, design: .rounded))
-                .monospacedDigit()
-                .lineLimit(1)
-                .fixedSize()
-            }
-            .scrollBounceBehavior(.basedOnSize)
+            OverflowCurrency(amount: amount, size: 20, alignment: .leading)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
