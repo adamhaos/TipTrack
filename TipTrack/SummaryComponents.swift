@@ -31,7 +31,34 @@ struct PressableButtonStyle: ButtonStyle {
     }
 }
 
+/// Turns a card edge-on, swaps its content, then turns the new content in from
+/// the other side, like flipping between cards in a wallet.
 enum CardTurn {
+    @MainActor
+    static func perform(_ turn: Binding<Double>, forward: Bool, reduceMotion: Bool,
+                        change: @escaping () -> Void) {
+        guard !reduceMotion else {
+            switchInPlace(change)
+            return
+        }
+        let direction: Double = forward ? 1 : -1
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        withAnimation(.easeIn(duration: 0.18)) {
+            turn.wrappedValue = -90 * direction
+        } completion: {
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                change()
+                turn.wrappedValue = 90 * direction
+            }
+            // Same spring as the wallet-card flip this is modeled on.
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.75)) {
+                turn.wrappedValue = 0
+            }
+        }
+    }
+
     /// Swaps in another period with no motion: the text and numbers stay put and
     /// just change.
     @MainActor
@@ -44,6 +71,10 @@ enum CardTurn {
 }
 
 extension View {
+    func cardTurn(_ degrees: Double) -> some View {
+        rotation3DEffect(.degrees(degrees), axis: (x: 0, y: 1, z: 0), perspective: 0.5)
+    }
+
     /// Swipe left for the next period and right for the previous one. Runs alongside
     /// taps and vertical scrolling, and ignores drags that are mostly up or down.
     func periodSwipe(canGoForward: Bool = true, onPrevious: @escaping () -> Void,
@@ -219,6 +250,7 @@ func periodCaption(_ period: String, jobName: String?) -> String {
 struct MonthlyStatsCard: View {
     @Environment(\.tipTrackColorful) private var colorfulTheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var turn: Double = 0
     let shifts: [Shift]
     let month: Date
     /// The job the dashboard is showing, or nil for all jobs.
@@ -304,6 +336,9 @@ struct MonthlyStatsCard: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .dashboardCardBackground(colorful: colorfulTheme)
+        // A long amount's scroller must not take a drag mid-turn (it crashed UIKit).
+        .scrollDisabled(turn != 0)
+        .cardTurn(turn)
         .contentShape(RoundedRectangle(cornerRadius: 18))
         .onTapGesture(perform: onOpenHistory)
         .periodSwipe(canGoForward: canGoForward,
@@ -321,7 +356,9 @@ struct MonthlyStatsCard: View {
     }
 
     private func slide(to edge: Edge, _ action: @escaping () -> Void) {
-        CardTurn.switchInPlace(action)
+        // One turn at a time: a swipe that lands mid-flip is ignored.
+        guard turn == 0 else { return }
+        CardTurn.perform($turn, forward: edge == .trailing, reduceMotion: reduceMotion, change: action)
     }
 
     private func periodDetails(count: Int, averageHourly: Double?) -> some View {
@@ -362,6 +399,7 @@ struct MonthlyStatsCard: View {
 struct CurrentWeekSummaryCard: View {
     @Environment(\.tipTrackColorful) private var colorfulTheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var turn: Double = 0
     let dateRange: String
     /// The job the dashboard is showing, or nil for all jobs.
     var jobName: String? = nil
@@ -418,6 +456,9 @@ struct CurrentWeekSummaryCard: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .dashboardCardBackground(colorful: colorfulTheme)
+        // A long amount's scroller must not take a drag mid-turn (it crashed UIKit).
+        .scrollDisabled(turn != 0)
+        .cardTurn(turn)
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpenWeek)
         .periodSwipe(canGoForward: canGoForward,
@@ -436,7 +477,9 @@ struct CurrentWeekSummaryCard: View {
     }
 
     private func slide(to edge: Edge, _ action: @escaping () -> Void) {
-        CardTurn.switchInPlace(action)
+        // One turn at a time: a swipe that lands mid-flip is ignored.
+        guard turn == 0 else { return }
+        CardTurn.perform($turn, forward: edge == .trailing, reduceMotion: reduceMotion, change: action)
     }
 
     private func weeklyMetric(title: String, amount: Double, color: Color) -> some View {
