@@ -79,6 +79,8 @@ struct LogAndTotalsView: View {
     /// on the right, Settings as a sheet and Log Shift as a centered card.
     @State private var isWideLayout = false
     @State private var sidePaneShowsHistory = false
+    /// The side page asked for but not shown yet; the newest request wins.
+    @State private var pendingSidePage: Bool?
     /// Changes when something asks the side calendar to jump to a day, so it starts fresh there.
     @State private var sideCalendarID = UUID()
     @State private var isShowingSettingsSheet = false
@@ -309,10 +311,14 @@ struct LogAndTotalsView: View {
     }
 
     private func showSidePage(history: Bool) {
-        guard sidePaneShowsHistory != history else { return }
+        guard (pendingSidePage ?? sidePaneShowsHistory) != history else { return }
+        pendingSidePage = history
+        // The leaving page reads the edge too, so set it one update before the swap.
         panelPageEdge = history ? .trailing : .leading
         Task { @MainActor in
             await Task.yield()
+            guard pendingSidePage == history else { return }
+            pendingSidePage = nil
             withAnimation(reduceMotion ? nil : .smooth(duration: 0.3)) {
                 sidePaneShowsHistory = history
             }
@@ -324,7 +330,10 @@ struct LogAndTotalsView: View {
     private func layoutChanged(toWide wide: Bool) {
         guard wide != isWideLayout else { return }
         isWideLayout = wide
-        guard wide, isShowingTopPanel else { return }
+        guard wide else { return }
+        // A panel still waiting for one to finish closing would open where it can't be seen.
+        pendingTopPanelOpen = nil
+        guard isShowingTopPanel else { return }
         let settings = isShowingSettings
         let history = isShowingHistory
         var transaction = Transaction(animation: nil)
@@ -338,7 +347,10 @@ struct LogAndTotalsView: View {
             topPanelDragOffset = 0
             topPanelDismissOffset = 0
             pendingTopPanelOpen = nil
-            if !settings { sidePaneShowsHistory = history }
+            if !settings {
+                pendingSidePage = nil
+                sidePaneShowsHistory = history
+            }
         }
         if settings { isShowingSettingsSheet = true }
     }
@@ -432,7 +444,9 @@ struct LogAndTotalsView: View {
     private var hardwareKeyboardCommands: some View {
         ZStack {
             if isFormExpanded {
-                if !isEditingNotes {
+                // Off while typing a note or reading a checkout slip (which has its own fields),
+                // and while an alert about this entry is up.
+                if !isEditingNotes && !isShowingReceiptScanner && validationMessage == nil && saveError == nil {
                     ForEach(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."], id: \.self) { key in
                         Button(key) { handleNumpadInput(key) }
                             .keyboardShortcut(KeyEquivalent(Character(key)), modifiers: [])
@@ -452,7 +466,8 @@ struct LogAndTotalsView: View {
                 }
                 Button("Close") { dismissLogForm() }
                     .keyboardShortcut(.escape, modifiers: [])
-            } else if !isShowingTopPanel && !isShowingSettingsSheet {
+            } else if !isShowingTopPanel && !isShowingSettingsSheet && !isShowingCurrentWeek
+                        && !isShowingSelectedMonth && !isAddingFirstJob {
                 Button("Log Shift") { openLogForm() }
                     .keyboardShortcut("n", modifiers: .command)
             }
