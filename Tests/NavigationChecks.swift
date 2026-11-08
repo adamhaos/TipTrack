@@ -36,6 +36,12 @@ struct NavigationChecks {
         precondition(order.count == DashboardCardID.allCases.count)
         precondition(Set(order).count == order.count)
         precondition(DashboardCardID.ordered(from: "").first == .calendar)
-        print("Navigation checks passed: month-end selection, leap years, DST, busy-day paging, and duplicate dashboard preferences.")
+        precondition(CalendarNavigation.swipe(width: -80, height: 10, predictedWidth: -90) == .next)
+        precondition(CalendarNavigation.swipe(width: 80, height: -10, predictedWidth: 90) == .previous)
+        precondition(CalendarNavigation.swipe(width: -30, height: 2, predictedWidth: -200) == .next)
+        precondition(CalendarNavigation.swipe(width: -30, height: 2, predictedWidth: -40) == nil)
+        // Mostly vertical drags belong to scrolling and panel gestures.
+        precondition(CalendarNavigation.swipe(width: 80, height: 70, predictedWidth: 200) == nil)
+        print("Navigation checks passed: swipes, month-end selection, leap years, DST, busy-day paging, and duplicate dashboard preferences.")
     }
 }

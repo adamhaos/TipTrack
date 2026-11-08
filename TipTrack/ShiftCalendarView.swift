@@ -6,12 +6,13 @@ struct ShiftCalendarView: View {
     var showsDetails = true
     var onCompactHeightChange: ((CGFloat) -> Void)?
     var onShowDetails: (() -> Void)?
+    /// Shown as an always-open iPad pane: no Done button and no title bar on the first page.
+    var embedded = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Query(filter: #Predicate<Shift> { $0.deletedAt == nil }, sort: \Shift.date) private var shifts: [Shift]
     @Query(sort: \Job.name) private var jobs: [Job]
     @State private var month: Date
-    @State private var turn: Double = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var selected: Date
     @State private var selectedJob: UUID?
@@ -25,7 +26,8 @@ struct ShiftCalendarView: View {
     @AppStorage(FeatureKeys.weekStart) private var weekStart = 2
     @Bindable private var schedule = ScheduleStore.shared
 
-    init(initialDate: Date = Date(), onClose: (() -> Void)? = nil, showsDetails: Bool = true, onCompactHeightChange: ((CGFloat) -> Void)? = nil, onShowDetails: (() -> Void)? = nil) {
+    init(initialDate: Date = Date(), onClose: (() -> Void)? = nil, showsDetails: Bool = true, onCompactHeightChange: ((CGFloat) -> Void)? = nil, onShowDetails: (() -> Void)? = nil, embedded: Bool = false) {
+        self.embedded = embedded
         self.onShowDetails = onShowDetails
         self.onCompactHeightChange = onCompactHeightChange
         self.showsDetails = showsDetails
@@ -121,7 +123,7 @@ struct ShiftCalendarView: View {
                             Button {
                                 let today = Calendar.current.startOfDay(for: Date())
                                 let todayMonth = Calendar.current.dateInterval(of: .month, for: today)?.start ?? today
-                                CardTurn.perform($turn, forward: todayMonth > month, reduceMotion: reduceMotion) {
+                                CardTurn.switchInPlace {
                                     month = todayMonth
                                     selected = today
                                 }
@@ -134,6 +136,7 @@ struct ShiftCalendarView: View {
                             .disabled(!showsReturnToToday)
                             .accessibilityLabel("Return calendar to today")
                         }
+                        // Months change with the arrows; a sideways swipe switches to History.
                         HStack(spacing: 10) {
                             Button { move(-1) } label: {
                                 Image(systemName: "chevron.left").font(.subheadline.weight(.semibold))
@@ -145,7 +148,6 @@ struct ShiftCalendarView: View {
                                 monthTitle
                                 monthEarnings
                             }
-                            .cardTurn(turn)
                             Spacer(minLength: 0)
                             Button { move(1) } label: {
                                 Image(systemName: "chevron.right").font(.subheadline.weight(.semibold))
@@ -173,7 +175,6 @@ struct ShiftCalendarView: View {
                         }
                     }
                     .id(month)
-                    .cardTurn(turn)
 
                         if selectedJob == nil && jobs.count > 1 {
                             jobColorLegend
@@ -245,7 +246,12 @@ struct ShiftCalendarView: View {
             .onChange(of: selectedJob) { dayPage = 0 }
             .protectEarnings()
             .navigationTitle("Shift Calendar").navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { close() } } }
+            .toolbar {
+                if !embedded {
+                    ToolbarItem(placement: .confirmationAction) { Button("Done") { close() } }
+                }
+            }
+            .toolbar(embedded ? .hidden : .automatic, for: .navigationBar)
             .task { await schedule.refresh(context: context) }
 
         }
@@ -271,7 +277,7 @@ struct ShiftCalendarView: View {
 
     private func move(_ amount: Int) {
         guard let newMonth = Calendar.current.date(byAdding: .month, value: amount, to: month) else { return }
-        CardTurn.perform($turn, forward: amount > 0, reduceMotion: reduceMotion) {
+        CardTurn.switchInPlace {
             month = newMonth
             selected = CalendarNavigation.selectedDay(in: newMonth, matching: selected, calendar: .current)
         }

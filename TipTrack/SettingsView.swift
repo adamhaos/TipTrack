@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import WatchConnectivity
 
 struct SettingsView: View {
     var onClose: (() -> Void)? = nil
@@ -48,10 +49,13 @@ struct SettingsView: View {
                             subtitle: "Theme, headline and homepage cards",
                             icon: "paintpalette.fill", color: .purple)
                     }
-                    NavigationLink { WatchSettingsView() } label: {
-                        SettingsDestinationLabel(title: "Apple Watch",
-                            subtitle: "Earnings, live timer and sync",
-                            icon: "applewatch", color: .pink)
+                    // An Apple Watch pairs only with iPhone, so iPad leaves this out.
+                    if WCSession.isSupported() {
+                        NavigationLink { WatchSettingsView() } label: {
+                            SettingsDestinationLabel(title: "Apple Watch",
+                                subtitle: "Earnings, live timer and sync",
+                                icon: "applewatch", color: .pink)
+                        }
                     }
                     NavigationLink { SystemGuidanceSettingsView() } label: {
                         SettingsDestinationLabel(title: "Siri, Widgets & Help",

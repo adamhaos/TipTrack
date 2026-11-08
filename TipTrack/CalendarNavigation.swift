@@ -16,4 +16,14 @@ enum CalendarNavigation {
         return calendar.date(byAdding: .day, value: day - 1, to: start)
             .map { calendar.startOfDay(for: $0) } ?? start
     }
+
+    enum Swipe: Equatable { case previous, next }
+
+    /// Reads a finished drag as a page swipe: mostly sideways and either long or quick.
+    /// Swiping left moves forward in time, like turning a page.
+    static func swipe(width: Double, height: Double, predictedWidth: Double) -> Swipe? {
+        guard abs(width) > abs(height) * 1.5,
+              abs(width) > 50 || abs(predictedWidth) > 140 else { return nil }
+        return width < 0 ? .next : .previous
+    }
 }

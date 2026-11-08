@@ -106,6 +106,7 @@ struct TipTrackerApp: App {
             (FileManager.default.fileExists(atPath: legacy.path) ? legacy : automatic.url)
         let enabled = UserDefaults.standard.object(forKey: "cloudSyncEnabled") as? Bool ?? true
         CloudSyncStatus.shared.enabledAtLaunch = enabled
+        SettingsSync.shared.start()
         let config = ModelConfiguration(schema: schema, url: storeURL,
             cloudKitDatabase: enabled ? .private("iCloud.atm.TipTrack") : .none)
 

@@ -9,6 +9,8 @@ struct WeeklyHistoryView: View {
     var onCompactHeightChange: ((CGFloat) -> Void)? = nil
     /// Asks the hosting panel to grow to full height before a week opens inside it.
     var onRequestExpand: (() -> Void)? = nil
+    /// Shown as an always-open iPad pane: no Done button and no title bar on the first page.
+    var embedded = false
     @Environment(\.dynamicTypeSize) private var textSize
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -237,10 +239,13 @@ struct WeeklyHistoryView: View {
             .navigationTitle("Recents")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { if let onClose { onClose() } else { dismiss() } }
+                if !embedded {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { if let onClose { onClose() } else { dismiss() } }
+                    }
                 }
             }
+            .toolbar(embedded ? .hidden : .automatic, for: .navigationBar)
             // Opens inside this panel rather than as a second pane on top of it.
             .navigationDestination(isPresented: Binding(
                 get: { selectedWeekForBreakdown != nil },
