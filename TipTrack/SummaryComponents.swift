@@ -110,28 +110,20 @@ extension View {
     }
 }
 
-/// A dollar amount at a fixed size. It only becomes a sideways scroller when it is too
-/// wide to fit, so on most cards it holds still under a swipe.
+/// A dollar amount at a fixed size that never scrolls or drags, so a swipe on the
+/// card always reaches the card. Only an amount too wide for its box shrinks to fit.
 struct OverflowCurrency: View {
     let amount: Double
     let size: CGFloat
     let alignment: Alignment
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            label
-            ScrollView(.horizontal, showsIndicators: false) { label }
-                .defaultScrollAnchor(alignment == .trailing ? .trailing : .leading)
-        }
-        .frame(maxWidth: .infinity, alignment: alignment)
-    }
-
-    private var label: some View {
         RollingCurrencyText(amount: amount)
             .font(.system(size: size, weight: .bold, design: .rounded))
             .monospacedDigit()
             .lineLimit(1)
-            .fixedSize()
+            .minimumScaleFactor(0.5)
+            .frame(maxWidth: .infinity, alignment: alignment)
     }
 }
 
