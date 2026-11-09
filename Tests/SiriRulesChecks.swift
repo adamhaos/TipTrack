@@ -4,6 +4,15 @@ import Foundation
 @main
 struct SiriRulesChecks {
     static func main() throws {
+        let jobNames = ["Milano’s", "Sunday Coffee", "Milano's Catering"]
+        precondition(TipTrackSiriRules.matchingJobIndices(names: jobNames, spoken: "Milanos") == [0])
+        precondition(TipTrackSiriRules.matchingJobIndices(names: jobNames, spoken: "milano's") == [0])
+        precondition(TipTrackSiriRules.matchingJobIndices(names: jobNames, spoken: "Milanos's Milanos") == [0])
+        precondition(TipTrackSiriRules.matchingJobIndices(names: jobNames, spoken: "Sunday cofee") == [1])
+        precondition(TipTrackSiriRules.matchingJobIndices(names: jobNames, spoken: "coffee") == [1])
+        precondition(TipTrackSiriRules.matchingJobIndices(names: ["Milanos"], spoken: "Milano’s") == [0])
+        precondition(TipTrackSiriRules.matchingJobIndices(names: jobNames, spoken: "Harbor").isEmpty)
+
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "America/New_York")!
         calendar.firstWeekday = 2

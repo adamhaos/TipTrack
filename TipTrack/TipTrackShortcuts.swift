@@ -156,11 +156,13 @@ enum TipTrackIntentStore {
     static func jobs(identifiers: [UUID]? = nil, matching search: String? = nil) throws -> [TipTrackJobEntity] {
         try requirePrivacyAccess()
         guard let container else { throw TipTrackIntentError.unableToAccessData }
-        let jobs = try ModelContext(container).fetch(FetchDescriptor<Job>(sortBy: [SortDescriptor(\Job.name)]))
-        return jobs.filter { job in
-            (identifiers == nil || identifiers?.contains(job.id) == true) &&
-            (search == nil || job.name.localizedCaseInsensitiveContains(search ?? ""))
-        }.map { TipTrackJobEntity(id: $0.id, name: $0.name) }
+        var jobs = try ModelContext(container).fetch(FetchDescriptor<Job>(sortBy: [SortDescriptor(\Job.name)]))
+        if let identifiers { jobs = jobs.filter { identifiers.contains($0.id) } }
+        if let search {
+            let names = jobs.map(\.name)
+            jobs = TipTrackSiriRules.matchingJobIndices(names: names, spoken: search).map { jobs[$0] }
+        }
+        return jobs.map { TipTrackJobEntity(id: $0.id, name: $0.name) }
     }
 
     static func summary(period: TipPeriod, jobID: UUID?, now: Date = Date()) throws -> (total: Double, count: Int, hourly: Double?) {

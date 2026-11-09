@@ -86,6 +86,43 @@ nonisolated enum TipTrackSiriRules {
         }
     }
 
+    /// Which job names match what Siri heard. Speech rarely matches the saved
+    /// spelling exactly ("Milanos" for "Milano’s", "Milanos's Milanos"), so names
+    /// are compared without case, accents, apostrophes or spaces, and a close
+    /// misspelling still counts when nothing matches outright.
+    static func matchingJobIndices(names: [String], spoken: String) -> [Int] {
+        let heard = jobKey(spoken)
+        guard !heard.isEmpty else { return Array(names.indices) }
+        let keys = names.map(jobKey)
+        let exact = keys.indices.filter { keys[$0] == heard }
+        if !exact.isEmpty { return exact }
+        let contained = keys.indices.filter { !keys[$0].isEmpty && (heard.contains(keys[$0]) || keys[$0].contains(heard)) }
+        if !contained.isEmpty { return contained }
+        let close = keys.indices.filter { keys[$0].count >= 4 && editDistance(keys[$0], heard) <= max(1, keys[$0].count / 4) }
+        return close
+    }
+
+    static func jobKey(_ text: String) -> String {
+        text.folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: .current)
+            .unicodeScalars.filter { CharacterSet.alphanumerics.contains($0) }
+            .map(String.init).joined()
+    }
+
+    private static func editDistance(_ lhs: String, _ rhs: String) -> Int {
+        let a = Array(lhs), b = Array(rhs)
+        guard !a.isEmpty else { return b.count }
+        guard !b.isEmpty else { return a.count }
+        var previous = Array(0...b.count)
+        for i in 1...a.count {
+            var current = [i] + Array(repeating: 0, count: b.count)
+            for j in 1...b.count {
+                current[j] = min(previous[j] + 1, current[j - 1] + 1, previous[j - 1] + (a[i - 1] == b[j - 1] ? 0 : 1))
+            }
+            previous = current
+        }
+        return previous[b.count]
+    }
+
     static func hourlyAverage(earningsAndHours: [(earnings: Double, hours: Double?)]) -> Double? {
         let timed = earningsAndHours.filter { ($0.hours ?? 0) > 0 }
         let hours = timed.reduce(0) { $0 + ($1.hours ?? 0) }
