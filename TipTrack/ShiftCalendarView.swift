@@ -17,8 +17,8 @@ struct ShiftCalendarView: View {
     @State private var selected: Date
     @State private var selectedJob: UUID?
     @State private var dayPage = 0
+    /// The day whose Log / Breakdown popover is open, if any.
     @State private var quickActionDay: Date?
-    @State private var showsDayActions = false
     @State private var shiftToEdit: Shift?
     @ScaledMetric(relativeTo: .subheadline) private var entryCardHeight: CGFloat = 112
     @Environment(\.dynamicTypeSize) private var textSize
@@ -455,19 +455,19 @@ struct ShiftCalendarView: View {
                 .opacity(Calendar.current.isDate(day, equalTo: month, toGranularity: .month) ? 1 : 0.3)
         }.buttonStyle(.plain)
         .popover(isPresented: Binding(
-            get: { showsDayActions && quickActionDay == day },
-            set: { if !$0 && quickActionDay == day { showsDayActions = false } }
+            get: { quickActionDay == day },
+            set: { if !$0 && quickActionDay == day { quickActionDay = nil } }
         ), attachmentAnchor: .rect(.bounds), arrowEdge: .bottom) {
             VStack(alignment: .leading, spacing: 12) {
                 Text(day.formatted(date: .complete, time: .omitted))
                     .font(.subheadline.weight(.semibold))
                 Button("Log a shift") {
-                    showsDayActions = false
+                    quickActionDay = nil
                     AppRoute.shared.openLog(date: day, jobID: selectedJob)
                     close()
                 }
                 Button("View day breakdown") {
-                    showsDayActions = false
+                    quickActionDay = nil
                     selected = day
                     dayPage = 0
                     onShowDetails?()
@@ -480,11 +480,9 @@ struct ShiftCalendarView: View {
         }
         .simultaneousGesture(LongPressGesture(minimumDuration: 0.5).onEnded { _ in
             quickActionDay = day
-            showsDayActions = true
         })
         .accessibilityAction(named: "Day actions") {
             quickActionDay = day
-            showsDayActions = true
         }
         .accessibilityHint("Touch and hold for shift and day actions")
         .accessibilityLabel("\(day.formatted(date: .complete, time: .omitted)), \(amount.formatted(.currency(code: "USD"))), \(scheduled.count) scheduled, \(jobIDs.count) jobs, \(missing ? "not logged" : (upcoming ? "upcoming" : ""))")
@@ -504,8 +502,9 @@ private struct ScheduleStatusView: View {
             ForEach(jobs.filter { !$0.calendarFeeds.isEmpty }) { job in
                 VStack(alignment: .leading, spacing: 4) {
                     Text(job.name).font(.headline)
-                    Text(schedule.status[job.id] ?? "Not refreshed yet")
-                        .font(.subheadline).foregroundStyle(.secondary)
+                    Text(schedule.status[job.id]?.message ?? "Not refreshed yet")
+                        .font(.subheadline)
+                        .foregroundStyle(schedule.status[job.id]?.needsAttention == true ? .orange : .secondary)
                     if let date = schedule.refreshedAt(job) {
                         Text("Updated \(date.formatted())").font(.caption)
                     }

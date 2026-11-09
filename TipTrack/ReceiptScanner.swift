@@ -58,13 +58,42 @@ struct ReceiptScannerView: View {
     var onCancel: (() -> Void)? = nil
     let onUse: (ReceiptScanResult) -> Void
     @State private var selectedItem: PhotosPickerItem?
-    @State private var image: UIImage?
-    @State private var result: ReceiptScanResult?
+    @State private var phase: ScanPhase = .empty
     @State private var isShowingCamera = false
-    @State private var scanning = false
-    @State private var scanID = UUID()
     @State private var reportType = ShiftReportType.automatic
     @State private var message = "Take a clear photo of the checkout slip or choose one from Photos."
+
+    /// Where the slip is in being read. Only the newest scan's result is kept.
+    private enum ScanPhase {
+        case empty
+        case reading(UIImage, scanID: UUID)
+        /// The photo had no image data Vision could read.
+        case unreadable(UIImage)
+        case read(ReceiptScanResult)
+    }
+
+    private var image: UIImage? {
+        switch phase {
+        case .empty: nil
+        case .reading(let image, _), .unreadable(let image): image
+        case .read(let result): result.image
+        }
+    }
+
+    private var result: ReceiptScanResult? {
+        if case .read(let result) = phase { return result }
+        return nil
+    }
+
+    private var scanning: Bool {
+        if case .reading = phase { return true }
+        return false
+    }
+
+    private var isUnreadable: Bool {
+        if case .unreadable = phase { return true }
+        return false
+    }
 
     init(embedded: Bool = false, onCancel: (() -> Void)? = nil,
          preferredReportType: ShiftReportType = .automatic,
@@ -79,14 +108,13 @@ struct ReceiptScannerView: View {
         if embedded {
             embeddedContent
                 .sheet(isPresented: $isShowingCamera) {
-                    CameraImagePicker { selected in image = selected; scan(selected) }
+                    CameraImagePicker { selected in scan(selected) }
                 }
                 .onChange(of: selectedItem) { _, item in
                     guard let item else { return }
                     Task {
                         if let data = try? await item.loadTransferable(type: Data.self),
                            let selected = UIImage(data: data) {
-                            image = selected
                             scan(selected)
                         }
                     }
@@ -139,6 +167,7 @@ struct ReceiptScannerView: View {
             }
             .buttonStyle(.bordered)
             if scanning { ProgressView("Reading checkout slip…") }
+            if isUnreadable { Text(Self.unreadableMessage).font(.caption).foregroundStyle(.orange) }
             if let result {
                 Text("Recognized Draft").font(.headline)
                 recognizedRow("Credit Tips", result.credit)
@@ -186,6 +215,7 @@ struct ReceiptScannerView: View {
                     }
                 }
                 if scanning { Section { ProgressView("Reading receipt…") } }
+                if isUnreadable { Section { Text(Self.unreadableMessage).foregroundStyle(.orange) } }
                 if let result {
                     Section("Recognized Draft") {
                         recognizedRow("Credit Tips", result.credit)
@@ -208,13 +238,12 @@ struct ReceiptScannerView: View {
                 }
             }
             .sheet(isPresented: $isShowingCamera) {
-                CameraImagePicker { selected in image = selected; scan(selected) }
+                CameraImagePicker { selected in scan(selected) }
             }
             .onChange(of: selectedItem) { _, item in
                 guard let item else { return }
                 Task {
                     if let data = try? await item.loadTransferable(type: Data.self), let selected = UIImage(data: data) {
-                        image = selected
                         scan(selected)
                     }
                 }
@@ -236,13 +265,13 @@ struct ReceiptScannerView: View {
         }
     }
 
+    private static let unreadableMessage = "This photo couldn't be read. Try taking it again or choose another."
+
     private func scan(_ selected: UIImage) {
-        guard let cgImage = selected.cgImage else { return }
+        guard let cgImage = selected.cgImage else { phase = .unreadable(selected); return }
         let currentScanID = UUID()
-        scanID = currentScanID
+        phase = .reading(selected, scanID: currentScanID)
         let selectedReportType = reportType
-        scanning = true
-        result = nil
         let orientation = CGImagePropertyOrientation(selected.imageOrientation)
         Task {
             let lines = await Task.detached {
@@ -253,9 +282,9 @@ struct ReceiptScannerView: View {
                 try? handler.perform([request])
                 return ReceiptTextRecognizer.reconstructedLines(from: request.results ?? [])
             }.value
-            guard scanID == currentScanID else { return }
-            result = ReceiptParser.parse(lines: lines, image: selected, reportType: selectedReportType)
-            scanning = false
+            // A newer photo or report type replaced this scan while it ran.
+            guard case .reading(_, let latestID) = phase, latestID == currentScanID else { return }
+            phase = .read(ReceiptParser.parse(lines: lines, image: selected, reportType: selectedReportType))
         }
     }
 }
