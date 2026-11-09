@@ -36,12 +36,9 @@ struct TipTrackJobEntity: AppEntity {
     static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
 
     let id: UUID
-    #if SIRI_AI_PREVIEW || canImport(AppIntents, _version: 301.2)
-    @Property(title: "Name", description: "The name of a workplace or job where the person logs tipped shifts, such as a restaurant or bar.")
-    var name: String
-    #else
+    // A Siri-facing description needs iOS 27.3 (above the deployment target) and stored
+    // property wrappers can't be availability-gated, so the name keeps the plain init.
     @Property(title: "Name") var name: String
-    #endif
 
     init(id: UUID, name: String) {
         self.id = id
