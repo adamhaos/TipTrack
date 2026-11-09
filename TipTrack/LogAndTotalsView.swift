@@ -624,9 +624,9 @@ struct LogAndTotalsView: View {
         .accessibilityHint("Share TipTrack3r")
     }
 
-    /// Picks which job the Monthly and Weekly cards show. Sits as a labelled chip right above
-    /// them (only with two or more jobs), so it reads as a stats filter, not an app-wide one,
-    /// and keeps the toolbar narrow enough for History and Calendar on small phones.
+    /// Picks which job the dashboard stats show. Sits beside the settings gear (only with two
+    /// or more jobs) so the toolbar is balanced around the centered title. The icon fills in
+    /// the job's color while a single job is showing, and the cards name it.
     private var statsJobMenu: some View {
         Menu {
             Picker("Show Stats For", selection: $statsJobID) {
@@ -636,27 +636,13 @@ struct LogAndTotalsView: View {
                 }
             }
         } label: {
-            HStack(spacing: 5) {
-                if let statsJob {
-                    Circle().fill(Color(hex: statsJob.colorHex)).frame(width: 8, height: 8)
-                }
-                Text("Stats:").foregroundStyle(.secondary)
-                Text(statsJob?.name ?? "All Jobs")
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-                Image(systemName: "chevron.down")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.secondary)
-            }
-            .font(.footnote.weight(.medium))
-            .padding(.horizontal, 12)
-            .frame(minHeight: 30)
-            .background(Color(uiColor: .secondarySystemGroupedBackground), in: Capsule())
-            .overlay(Capsule().stroke(Color.primary.opacity(0.08), lineWidth: 1))
-            .contentShape(Capsule())
+            Image(systemName: statsJob == nil
+                ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+                .imageScale(.large)
+                .foregroundStyle(isFormExpanded ? Color.gray
+                    : statsJob.map { Color(hex: $0.colorHex) }
+                    ?? (colorfulTheme ? Color.purple : Color.accentColor))
         }
-        .buttonStyle(.plain)
-        .frame(maxWidth: .infinity, alignment: .leading)
         .disabled(isFormExpanded)
         .accessibilityLabel("Show stats for")
         .accessibilityValue(statsJob?.name ?? "All Jobs")
@@ -668,7 +654,8 @@ struct LogAndTotalsView: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                // Gear and job filter share the left; History and Calendar the right.
+                ToolbarItemGroup(placement: .topBarLeading) {
                     Button {
                         presentSettings()
                     } label: {
@@ -677,6 +664,7 @@ struct LogAndTotalsView: View {
                             .foregroundStyle(isFormExpanded ? Color.gray : (colorfulTheme ? Color.pink : Color.accentColor))
                     }
                     .disabled(isFormExpanded)
+                    if jobs.count > 1 { statsJobMenu }
                 }
             }
             .toolbar {
@@ -858,9 +846,6 @@ struct LogAndTotalsView: View {
                         .transition(.opacity.combined(with: .scale(scale: 0.96)))
                 }
                 ForEach(dashboardCards.filter { !isFirstRun || ![.greeting, .monthly, .weekly].contains($0) }) { card in
-                    if card == firstStatsCard && jobs.count > 1 {
-                        statsJobMenu
-                    }
                     dashboardCard(card)
                         .tint(colorfulTheme ? card.colorfulColor : Color.accentColor)
                 }
@@ -882,12 +867,6 @@ struct LogAndTotalsView: View {
                 }
             }
         }
-    }
-
-    /// The first stats card that's showing; the job filter chip sits right above it.
-    private var firstStatsCard: DashboardCardID? {
-        guard !isFirstRun else { return nil }
-        return dashboardCards.first { ($0 == .monthly && showMonthly) || ($0 == .weekly && showWeekly) }
     }
 
     @ViewBuilder
@@ -1817,12 +1796,12 @@ private extension View {
     func appTitleToolbar(_ title: some View) -> some View {
         if #available(iOS 26.0, *) {
             toolbar {
-                ToolbarItem(placement: .topBarLeading) { title }
+                ToolbarItem(placement: .principal) { title }
                     .sharedBackgroundVisibility(.hidden)
             }
         } else {
             toolbar {
-                ToolbarItem(placement: .topBarLeading) { title }
+                ToolbarItem(placement: .principal) { title }
             }
         }
     }
