@@ -648,7 +648,17 @@ struct LogAndTotalsView: View {
 
     private var dashboardPresentation: some View {
             dashboardLayout
-            .appTitleToolbar(appTitleMenu)
+            // The job filter rides in the title's item, right after the name and without a glass
+            // bubble of its own: as a separate button it pushed Calendar into the toolbar's
+            // overflow menu on iPhone. It's hidden with a single job, since there's nothing to pick.
+            .appTitleToolbar(
+                HStack(spacing: 10) {
+                    appTitleMenu
+                    if jobs.count > 1 {
+                        statsJobMenu.imageScale(.large)
+                    }
+                }
+            )
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -663,12 +673,7 @@ struct LogAndTotalsView: View {
                     .disabled(isFormExpanded)
                 }
             }
-            // The job filter sits on the left after the title, so the right side holds only
-            // History and Calendar. It's hidden with a single job, since there's nothing to pick.
             .toolbar {
-                if jobs.count > 1 {
-                    ToolbarItem(placement: .topBarLeading) { statsJobMenu }
-                }
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     // Calendar and History each have their own button. On a wide iPad both
                     // are always open beside the dashboard, with their own tabs there.
