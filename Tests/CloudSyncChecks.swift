@@ -29,7 +29,8 @@ struct CloudSyncChecks {
 
         let schema = CloudSyncStatus.describe(partial([(.invalidArguments,
             "Cannot create or modify field 'CD_notes' in record 'CD_Shift' in production schema")]))
-        precondition(schema.summary.contains("doesn't match this version"))
+        precondition(schema.summary.contains("needs an update"))
+        precondition(schema.detail.contains("Production"))
         precondition(schema.detail.contains("CD_notes"))
 
         // A real cause wins over a transient one in the same batch.
@@ -47,7 +48,8 @@ struct CloudSyncChecks {
 
         let plain = CloudSyncStatus.describe(NSError(domain: "Other", code: 1,
             userInfo: [NSLocalizedDescriptionKey: "Something odd"]))
-        precondition(plain.summary == "Something odd")
+        precondition(plain.summary == "iCloud couldn't save some changes.")
+        precondition(plain.detail.contains("Something odd"))
         print("Cloud sync checks passed.")
     }
 }

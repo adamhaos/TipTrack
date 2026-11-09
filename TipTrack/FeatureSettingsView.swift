@@ -38,7 +38,6 @@ struct ICloudSyncSection: View {
     @AppStorage("cloudSyncEnabled") private var cloudSync = true
     @State private var cloudStatus = "Checking iCloud account…"
     @State private var checkingSync = false
-    @State private var saveStatus: String?
     @State private var deviceCounts: (shifts: Int, jobs: Int, scheduleLinks: Int)?
     @State private var copiedReport = false
     private var sync: CloudSyncStatus { .shared }
@@ -47,12 +46,14 @@ struct ICloudSyncSection: View {
         deviceCounts.map { "\($0.shifts) shifts · \($0.jobs) jobs · \($0.scheduleLinks) schedule links" }
     }
 
+    private static let dateStyle = Date.FormatStyle(date: .abbreviated, time: .shortened)
+
     @ViewBuilder private var syncStatusRows: some View {
         let problem = sync.standingProblem?.problem
         let icon: (name: String, color: Color) = switch problem?.retriesAutomatically {
-        case nil: ("checkmark.icloud", .secondary)
         case true?: ("arrow.clockwise.icloud", .orange)
         case false?: ("exclamationmark.icloud", .red)
+        case nil: sync.transferredThisSession ? ("checkmark.icloud", .green) : ("icloud", .secondary)
         }
         Label {
             Text(sync.message)
@@ -63,48 +64,52 @@ struct ICloudSyncSection: View {
         if let problem {
             Text(problem.advice).font(.caption).foregroundStyle(.secondary)
         }
-        LabeledContent("Last upload",
-            value: sync.lastUpload?.formatted(date: .abbreviated, time: .shortened) ?? "Not yet this session").font(.caption)
-        LabeledContent("Last download",
-            value: sync.lastDownload?.formatted(date: .abbreviated, time: .shortened) ?? "Not yet this session").font(.caption)
     }
 
     var body: some View {
         Section {
-            Toggle("iCloud Synchronization", isOn: $cloudSync)
+            Toggle("iCloud Sync", isOn: $cloudSync)
             Text(cloudStatus).font(.caption).foregroundStyle(.secondary)
             if sync.enabledAtLaunch {
                 syncStatusRows
             } else {
                 Text("Sync is off for this app session.").font(.caption).foregroundStyle(.secondary)
             }
-            if sync.enabledAtLaunch != cloudSync { Text("Close and reopen TipTrack to apply this change.").font(.caption).foregroundStyle(.orange) }
-            Button(checkingSync ? "Checking…" : "Save & Check Sync") {
+            if sync.enabledAtLaunch != cloudSync {
+                Text(sync.enabledAtLaunch ? "Sync is still on. Close and reopen TipTrack to turn it off."
+                    : "Sync is still off. Close and reopen TipTrack to turn it on.")
+                    .font(.caption).foregroundStyle(.orange)
+            }
+            Button(checkingSync ? "Checking…" : "Refresh Status") {
                 Task {
                     checkingSync = true
                     defer { checkingSync = false }
-                    do {
-                        try context.save()
-                        saveStatus = "Local changes saved. iCloud transfers run automatically; this check does not force a download."
-                    } catch {
-                        saveStatus = "Could not save changes: \(error.localizedDescription)"
-                    }
+                    // Saving hands any pending edits to iCloud sync.
+                    try? context.save()
                     countRecords()
                     await updateCloudStatus()
                 }
             }.disabled(checkingSync)
-            if let saveStatus { Text(saveStatus).font(.caption).foregroundStyle(.secondary) }
-            if let countsText {
-                LabeledContent("On this device", value: countsText).font(.caption)
+            DisclosureGroup("Sync Details") {
+                LabeledContent("Last upload", value: sync.lastUpload?.formatted(Self.dateStyle) ?? "Never")
+                LabeledContent("Last download", value: sync.lastDownload?.formatted(Self.dateStyle) ?? "Never")
+                if let countsText {
+                    LabeledContent("On this device", value: countsText)
+                }
+                LabeledContent("iCloud database", value: CloudSyncStatus.databaseEnvironment)
+                Button(copiedReport ? "Sync Report Copied" : "Copy Sync Report") {
+                    UIPasteboard.general.string = sync.report(osVersion: UIDevice.current.systemVersion,
+                        device: UIDevice.current.model, account: cloudStatus, counts: countsText)
+                    copiedReport = true
+                    Task {
+                        try? await Task.sleep(for: .seconds(2))
+                        copiedReport = false
+                    }
+                }
             }
-            LabeledContent("iCloud database", value: CloudSyncStatus.databaseEnvironment).font(.caption)
-            Button(copiedReport ? "Sync Report Copied" : "Copy Sync Report") {
-                UIPasteboard.general.string = sync.report(osVersion: UIDevice.current.systemVersion,
-                    device: UIDevice.current.model, counts: countsText)
-                copiedReport = true
-            }
+            .font(.caption)
         } header: { Text("iCloud Sync") }
-        footer: { Text("Syncs your shifts, jobs (with their schedule links, colors and reminders), app settings and daily reminder times through your private iCloud account. Face ID, hidden earnings, Spotlight, receipt photos and turning reminders on stay on each device. To check sync, compare the counts and iCloud database above on both devices.") }
+        footer: { Text("Syncs shifts, jobs, schedule links, settings and reminder times through your iCloud account. Face ID, hidden earnings, Spotlight and receipt photos stay on each device. Both devices need the same Apple Account.") }
         .task {
             countRecords()
             await updateCloudStatus()
@@ -120,9 +125,9 @@ struct ICloudSyncSection: View {
 
     private func updateCloudStatus() async {
         do {
-            let status = try await CKContainer(identifier: "iCloud.atm.TipTrack").accountStatus()
+            let status = try await CKContainer(identifier: CloudSyncStatus.containerID).accountStatus()
             switch status {
-            case .available: cloudStatus = "Signed in to iCloud. Upload and download activity appears below."
+            case .available: cloudStatus = "Signed in to iCloud."
             case .noAccount: cloudStatus = "Sign in to iCloud in iOS Settings to sync."
             case .restricted: cloudStatus = "iCloud access is restricted on this device."
             default: cloudStatus = "iCloud is temporarily unavailable. Your local data is retained."

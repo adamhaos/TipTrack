@@ -40,11 +40,18 @@ final class CloudSyncStatus: NSObject {
     }
 
     static let shared = CloudSyncStatus()
+    nonisolated static let containerID = "iCloud.atm.TipTrack"
     var enabledAtLaunch = false
     private(set) var outcomes: [Direction: Outcome] = [:]
     /// The last successful upload and download, kept even while a later one fails.
-    private(set) var lastUpload: Date?
-    private(set) var lastDownload: Date?
+    private(set) var lastUpload = UserDefaults.standard.object(forKey: "cloudSync.lastUpload") as? Date {
+        didSet { UserDefaults.standard.set(lastUpload, forKey: "cloudSync.lastUpload") }
+    }
+    private(set) var lastDownload = UserDefaults.standard.object(forKey: "cloudSync.lastDownload") as? Date {
+        didSet { UserDefaults.standard.set(lastDownload, forKey: "cloudSync.lastDownload") }
+    }
+    /// True once a transfer has succeeded in this app session.
+    private(set) var transferredThisSession = false
     private(set) var log: [LogEntry] = []
 
     override private init() {
@@ -73,7 +80,7 @@ final class CloudSyncStatus: NSObject {
         if case .running = outcome(.upload) { return "Uploading changes…" }
         if case .running = outcome(.download) { return "Downloading changes…" }
         if case .running = outcome(.setup) { return "Connecting to iCloud…" }
-        if lastUpload != nil || lastDownload != nil { return "Last transfer completed successfully." }
+        if transferredThisSession { return "Last transfer completed successfully." }
         if case .succeeded = outcome(.setup) { return "Connected. Waiting for changes to sync." }
         return "Waiting for iCloud sync activity."
     }
@@ -107,8 +114,8 @@ final class CloudSyncStatus: NSObject {
             append(direction, "Failed. \(problem.detail)", at: end)
         } else if succeeded {
             outcomes[direction] = .succeeded(at: end)
-            if direction == .upload { lastUpload = end }
-            if direction == .download { lastDownload = end }
+            if direction == .upload { lastUpload = end; transferredThisSession = true }
+            if direction == .download { lastDownload = end; transferredThisSession = true }
             append(direction, "Succeeded.", at: end)
         } else {
             let unknown = CloudSyncProblem(summary: "iCloud didn't finish the transfer.",
@@ -135,16 +142,17 @@ final class CloudSyncStatus: NSObject {
         let causes = errors.filter { $0.code != .batchRequestFailed && $0.code != .partialFailure }
         let detail = detailText(top: error, causes: causes)
         guard let main = causes.first(where: { !isTransient($0.code) }) ?? causes.first else {
-            return CloudSyncProblem(summary: error.localizedDescription,
-                advice: "TipTrack will try again. Your data on this device is kept.",
+            return CloudSyncProblem(summary: "iCloud couldn't save some changes.",
+                advice: "Your data on this device is kept. If this keeps happening, copy the sync report and send it to the developer.",
                 retriesAutomatically: false, detail: detail)
         }
         let message = main.localizedDescription.lowercased()
         let mentionsSchema = message.contains("schema") || message.contains("field") || message.contains("record type")
         if [.invalidArguments, .unknownItem, .serverRejectedRequest].contains(main.code) && mentionsSchema {
-            return CloudSyncProblem(summary: "iCloud's database doesn't match this version of TipTrack.",
-                advice: "This needs a developer fix: deploy the CloudKit schema to Production in CloudKit Console, then reopen TipTrack. Your data on this device is kept.",
-                retriesAutomatically: false, detail: detail)
+            return CloudSyncProblem(summary: "TipTrack needs an update to keep syncing.",
+                advice: "Your data on this device is kept and uploads once the update is out.",
+                retriesAutomatically: false,
+                detail: detail + "\nDeveloper: deploy the CloudKit schema to Production in CloudKit Console.")
         }
         switch main.code {
         case .quotaExceeded:
@@ -153,7 +161,7 @@ final class CloudSyncStatus: NSObject {
                 retriesAutomatically: false, detail: detail)
         case .notAuthenticated:
             return CloudSyncProblem(summary: "This device isn't signed in to iCloud.",
-                advice: "Sign in to iCloud in iOS Settings, and turn on iCloud Drive.",
+                advice: "Sign in to iCloud in iOS Settings, then make sure TipTrack is allowed under Settings > your name > iCloud.",
                 retriesAutomatically: false, detail: detail)
         case .networkUnavailable, .networkFailure, .serviceUnavailable, .requestRateLimited,
              .zoneBusy, .serverResponseLost:
@@ -169,20 +177,20 @@ final class CloudSyncStatus: NSObject {
                 advice: "Open iOS Settings > your name and finish any sign-in or terms prompt.",
                 retriesAutomatically: false, detail: detail)
         case .zoneNotFound, .userDeletedZone:
-            return CloudSyncProblem(summary: "TipTrack's iCloud data was reset.",
-                advice: "TipTrack uploads this device's data again on its own. Keep the app open for a minute.",
+            return CloudSyncProblem(summary: "TipTrack's data in iCloud is missing or was removed.",
+                advice: "TipTrack normally uploads this device's data again on its own. Keep the app open for a minute; if this stays, copy the sync report.",
                 retriesAutomatically: true, detail: detail)
         case .limitExceeded:
             return CloudSyncProblem(summary: "A change was too large to upload in one go.",
                 advice: "TipTrack splits it and retries on its own.",
                 retriesAutomatically: true, detail: detail)
         case .permissionFailure, .missingEntitlement, .badContainer:
-            return CloudSyncProblem(summary: "This copy of TipTrack isn't allowed to use iCloud.",
-                advice: "Reinstall TipTrack from the App Store or TestFlight. Your data on this device is kept until you delete the app.",
+            return CloudSyncProblem(summary: "This copy of TipTrack can't use iCloud.",
+                advice: "Your data on this device is kept. Copy the sync report and send it to the developer; don't delete the app, since shifts that haven't uploaded would be lost.",
                 retriesAutomatically: false, detail: detail)
         default:
-            return CloudSyncProblem(summary: error.localizedDescription,
-                advice: "Copy the sync report below and send it to the developer. Your data on this device is kept.",
+            return CloudSyncProblem(summary: "iCloud couldn't save some changes.",
+                advice: "Your data on this device is kept. If this keeps happening, copy the sync report and send it to the developer.",
                 retriesAutomatically: false, detail: detail)
         }
     }
@@ -215,7 +223,8 @@ final class CloudSyncStatus: NSObject {
         var counts: [String: Int] = [:]
         var order: [String] = []
         for cause in causes {
-            let line = "CKError \(cause.code.rawValue) \(name(of: cause.code)): \(cause.localizedDescription)"
+            var line = "CKError \(cause.code.rawValue) \(name(of: cause.code)): \(cause.localizedDescription)"
+            if let wait = cause.retryAfterSeconds { line += " (retry after \(Int(wait))s)" }
             if counts[line] == nil { order.append(line) }
             counts[line, default: 0] += 1
         }
@@ -262,21 +271,19 @@ final class CloudSyncStatus: NSObject {
         if Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision") != nil {
             return "Development (installed from Xcode)"
         }
-        if Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt" {
-            return "Production (TestFlight)"
-        }
-        return "Production (App Store)"
+        return "Production (TestFlight or App Store)"
     }
 
     /// Plain-text report for the "Copy Sync Report" button.
-    func report(osVersion: String, device: String, counts: String?) -> String {
+    func report(osVersion: String, device: String, account: String, counts: String?) -> String {
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"
         let build = info?["CFBundleVersion"] as? String ?? "?"
         var lines = [
-            "TipTrack \(version) (\(build)) sync report",
+            "TipTrack \(version) (\(build)) sync report, \(Date().formatted(date: .abbreviated, time: .standard))",
             "Device: \(device), OS \(osVersion)",
-            "iCloud database: \(Self.databaseEnvironment)",
+            "Container: \(Self.containerID), database: \(Self.databaseEnvironment)",
+            "iCloud account: \(account)",
             "Sync on at launch: \(enabledAtLaunch ? "yes" : "no")",
             "Status: \(message)",
         ]
