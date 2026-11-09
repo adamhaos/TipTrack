@@ -73,7 +73,7 @@ struct LogAndTotalsView: View {
     @State private var isAddingFirstJob = false
     @State private var isShowingSettings = false
     @State private var isShowingHistory = false
-    /// The side the next Calendar/History page slides in from.
+    /// The side the next page of the iPad side pane slides in from.
     @State private var panelPageEdge: Edge = .trailing
     /// iPad with room for two columns: dashboard on the left, Calendar/History always open
     /// on the right, Settings as a sheet and Log Shift as a centered card.
@@ -89,8 +89,8 @@ struct LogAndTotalsView: View {
     @State private var selectedMonth = Calendar.current.dateInterval(of: .month, for: Date())?.start ?? Date()
     @State private var selectedWeekStart = Calendar.preferredWeek.dateInterval(of: .weekOfYear, for: Date())?.start ?? Date()
 
-    @State private var lastSavedShift: Shift? = nil
-    @State private var showUndoToast: Bool = false
+    /// The shift just saved while its Undo toast is showing; nil hides the toast.
+    @State private var undoableShift: Shift?
     @State private var undoTask: Task<Void, Never>? = nil
     @State private var validationMessage: String?
     @State private var pendingReceiptImage: UIImage?
@@ -246,27 +246,10 @@ struct LogAndTotalsView: View {
             WeeklyHistoryView(onClose: closeTopPanel, isExpanded: isTopPanelExpanded,
                 onCompactHeightChange: { compactHistoryHeight = $0 },
                 onRequestExpand: { withAnimation(sheetAnimation) { isTopPanelExpanded = true } })
-                .transition(reduceMotion ? .opacity : .push(from: panelPageEdge))
         } else if isShowingCalendar {
             ShiftCalendarView(initialDate: calendarInitialDate, onClose: closeTopPanel, showsDetails: isTopPanelExpanded, onCompactHeightChange: { compactCalendarHeight = $0 }, onShowDetails: {
                 withAnimation(sheetAnimation) { isTopPanelExpanded = true }
             })
-            .transition(reduceMotion ? .opacity : .push(from: panelPageEdge))
-        }
-    }
-
-    /// Calendar and History share one panel: Calendar first, History to its right.
-    private func showPanelPage(history: Bool) {
-        guard isShowingHistory != history, isShowingHistory || isShowingCalendar, !isClosingTopPanel else { return }
-        // The leaving page reads the edge too, so set it one update before the swap.
-        panelPageEdge = history ? .trailing : .leading
-        Task { @MainActor in
-            await Task.yield()
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            withAnimation(reduceMotion ? nil : .smooth(duration: 0.3)) {
-                isShowingHistory = history
-                isShowingCalendar = !history
-            }
         }
     }
 
@@ -383,19 +366,6 @@ struct LogAndTotalsView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .clipped()
-            // Same sideways swipe as the iPhone panel: Calendar on the left, History on the right.
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 20)
-                    .onEnded { value in
-                        switch CalendarNavigation.swipe(width: value.translation.width,
-                            height: value.translation.height,
-                            predictedWidth: value.predictedEndTranslation.width) {
-                        case .next?: showSidePage(history: true)
-                        case .previous?: showSidePage(history: false)
-                        case nil: break
-                        }
-                    }
-            )
         }
         .background(Color(uiColor: .systemGroupedBackground))
     }
@@ -477,30 +447,6 @@ struct LogAndTotalsView: View {
         .accessibilityHidden(true)
     }
 
-    /// Two labeled dots above the handle; tapping one also switches pages.
-    private var panelPageSwitcher: some View {
-        HStack(spacing: 14) {
-            ForEach([false, true], id: \.self) { history in
-                let selected = isShowingHistory == history
-                Button { showPanelPage(history: history) } label: {
-                    HStack(spacing: 5) {
-                        Circle()
-                            .fill(selected ? Color.accentColor : Color.secondary.opacity(0.35))
-                            .frame(width: 6, height: 6)
-                        Text(history ? "History" : "Calendar")
-                            .font(.system(size: 12, weight: selected ? .semibold : .medium))
-                            .foregroundStyle(selected ? Color.primary : Color.secondary)
-                    }
-                    .padding(.horizontal, 6)
-                    .frame(height: 22)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(selected ? .isSelected : [])
-            }
-        }
-    }
-
     var body: some View {
         GeometryReader { geometry in
             let wide = usesWideLayout(width: geometry.size.width)
@@ -549,28 +495,13 @@ struct LogAndTotalsView: View {
             }
             .overlay(alignment: .top) {
                 if isShowingTopPanel && !wide {
-                    // Room for the Calendar/History switcher under the page.
-                    let compactHeight = min((isShowingCalendar ? compactCalendarHeight : compactHistoryHeight) + 24, geometry.size.height)
+                    let compactHeight = min(isShowingCalendar ? compactCalendarHeight : compactHistoryHeight, geometry.size.height)
                     let expanded = isShowingSettings || isTopPanelExpanded
                     let panelHeight = expanded ? geometry.size.height : compactHeight
                     VStack(spacing: 0) {
                         topPanelContent
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .clipped()
-                            // Sideways swipes move between Calendar (left) and History (right).
-                            .simultaneousGesture(
-                                DragGesture(minimumDistance: 20)
-                                    .onEnded { value in
-                                        guard !isShowingSettings else { return }
-                                        switch CalendarNavigation.swipe(width: value.translation.width,
-                                            height: value.translation.height,
-                                            predictedWidth: value.predictedEndTranslation.width) {
-                                        case .next?: showPanelPage(history: true)
-                                        case .previous?: showPanelPage(history: false)
-                                        case nil: break
-                                        }
-                                    }
-                            )
                             .simultaneousGesture(
                                 DragGesture(minimumDistance: 20, coordinateSpace: .named("topPanelDragSpace"))
                                     .onChanged { value in
@@ -597,8 +528,6 @@ struct LogAndTotalsView: View {
                                 including: expanded ? .subviews : .all
                             )
                         if !isShowingSettings {
-                            panelPageSwitcher
-                                .padding(.top, 2)
                             VStack(spacing: 5) {
                                 Capsule().fill(Color.secondary.opacity(0.35)).frame(width: 40, height: 4)
                                 Text(expanded ? "Swipe up to close" : (isShowingHistory
@@ -687,7 +616,7 @@ struct LogAndTotalsView: View {
             }
         } label: {
             Text("TipTrack3r")
-                .font(.title2.bold())
+                .font(.title3.bold())
                 .foregroundStyle(.primary)
                 .fixedSize()
         }
@@ -695,14 +624,20 @@ struct LogAndTotalsView: View {
         .accessibilityHint("Share TipTrack3r")
     }
 
-    /// Picks which job the dashboard stats show. The icon fills in the job's color
-    /// while a single job is showing, and the cards name it.
+    /// Picks which job the dashboard stats show. Sits beside the Calendar button (only with two
+    /// or more jobs) so the toolbar is balanced around the centered title. The icon fills in
+    /// the job's color while a single job is showing, and the cards name it.
     private var statsJobMenu: some View {
         Menu {
             Picker("Show Stats For", selection: $statsJobID) {
                 Label("All Jobs", systemImage: "square.stack.3d.up").tag(nil as UUID?)
                 ForEach(jobs) { job in
-                    Label(job.name, systemImage: job.iconSymbolName).tag(Optional(job.id))
+                    Label {
+                        Text(job.name)
+                    } icon: {
+                        jobMenuIcon(job)
+                    }
+                    .tag(Optional(job.id))
                 }
             }
         } label: {
@@ -717,13 +652,24 @@ struct LogAndTotalsView: View {
         .accessibilityValue(statsJob?.name ?? "All Jobs")
     }
 
+    /// A job's icon in its own color. Menus redraw plain symbols in one color, so the color
+    /// is baked into the image.
+    private func jobMenuIcon(_ job: Job) -> Image {
+        let color = UIColor(Color(hex: job.colorHex))
+        guard let symbol = UIImage(systemName: job.iconSymbolName) else {
+            return Image(systemName: job.iconSymbolName)
+        }
+        return Image(uiImage: symbol.withTintColor(color, renderingMode: .alwaysOriginal))
+    }
+
     private var dashboardPresentation: some View {
             dashboardLayout
             .appTitleToolbar(appTitleMenu)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                // Gear and History share the left; job filter and Calendar the right.
+                ToolbarItemGroup(placement: .topBarLeading) {
                     Button {
                         presentSettings()
                     } label: {
@@ -732,10 +678,23 @@ struct LogAndTotalsView: View {
                             .foregroundStyle(isFormExpanded ? Color.gray : (colorfulTheme ? Color.pink : Color.accentColor))
                     }
                     .disabled(isFormExpanded)
+                    // On a wide iPad History is always open in the side pane.
+                    if !isWideLayout {
+                        Button {
+                            presentHistory()
+                        } label: {
+                            Image(systemName: "clock.arrow.circlepath")
+                                .foregroundStyle(isFormExpanded ? Color.gray : (colorfulTheme ? Color.orange : Color.accentColor))
+                        }
+                            .disabled(isFormExpanded)
+                            .accessibilityLabel("Shift History")
+                    }
                 }
+            }
+            .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     if jobs.count > 1 { statsJobMenu }
-                    // The calendar is always open beside the dashboard on a wide iPad.
+                    // On a wide iPad the calendar is always open in the side pane.
                     if !isWideLayout {
                         Button {
                             presentCalendar()
@@ -744,7 +703,7 @@ struct LogAndTotalsView: View {
                                 .foregroundStyle(isFormExpanded ? Color.gray : (colorfulTheme ? Color.cyan : Color.accentColor))
                         }
                             .disabled(isFormExpanded)
-                            .accessibilityLabel("Calendar and History")
+                            .accessibilityLabel("Shift Calendar")
                     }
                 }
             }
@@ -916,7 +875,7 @@ struct LogAndTotalsView: View {
             .allowsHitTesting(!isFormExpanded)
             .accessibilityHidden(isFormExpanded)
             .overlay(alignment: .bottom) {
-                if showUndoToast && !isFormExpanded {
+                if undoableShift != nil && !isFormExpanded {
                     undoToastView
                         // On a wide iPad Log Shift sits at the bottom; keep the toast above it.
                         .padding(.bottom, isWideLayout && showLogShift ? 76 : 0)
@@ -1590,7 +1549,6 @@ struct LogAndTotalsView: View {
 
             UINotificationFeedbackGenerator().notificationOccurred(.success)
 
-            lastSavedShift = newShift
             creditInput = ""
             cashInput = ""
             barTipOutInput = ""
@@ -1608,14 +1566,14 @@ struct LogAndTotalsView: View {
                 isFormExpanded = false
                 isShowingReceiptScanner = false
                 formSheetDragOffset = 0
-                showUndoToast = true
+                undoableShift = newShift
             }
 
             undoTask?.cancel()
             undoTask = Task {
                 try? await Task.sleep(nanoseconds: 5_000_000_000)
                 if !Task.isCancelled {
-                    withAnimation { showUndoToast = false }
+                    withAnimation { undoableShift = nil }
                 }
             }
         }
@@ -1729,7 +1687,7 @@ struct LogAndTotalsView: View {
     }
 
     private func undoLastSave() {
-        guard let shiftToUndo = lastSavedShift else { return }
+        guard let shiftToUndo = undoableShift else { return }
         let receiptName = shiftToUndo.receiptImageName
         modelContext.delete(shiftToUndo)
         do {
@@ -1743,9 +1701,8 @@ struct LogAndTotalsView: View {
         ReceiptStore.remove(named: receiptName)
         undoTask?.cancel()
 
-        lastSavedShift = nil
         withAnimation {
-            showUndoToast = false
+            undoableShift = nil
         }
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     }
@@ -1853,12 +1810,12 @@ private extension View {
     func appTitleToolbar(_ title: some View) -> some View {
         if #available(iOS 26.0, *) {
             toolbar {
-                ToolbarItem(placement: .topBarLeading) { title }
+                ToolbarItem(placement: .principal) { title }
                     .sharedBackgroundVisibility(.hidden)
             }
         } else {
             toolbar {
-                ToolbarItem(placement: .topBarLeading) { title }
+                ToolbarItem(placement: .principal) { title }
             }
         }
     }

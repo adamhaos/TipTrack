@@ -8,22 +8,34 @@ final class PrivacyManager {
     static let shared = PrivacyManager()
     var enabled = UserDefaults.standard.bool(forKey: "privacyEnabled")
     var unlocked = false
-    var authenticating = false
-    var message: String?
+    /// The latest Face ID attempt. Kept apart from `unlocked` so re-checking while
+    /// already unlocked (turning a setting on or off) doesn't hide the screen.
+    private(set) var attempt: AuthAttempt = .idle
     var hidden: Bool { enabled && !unlocked }
+    var authenticating: Bool { attempt == .inProgress }
+    var message: String? {
+        if case .failed(let message) = attempt { return message }
+        return nil
+    }
+
+    enum AuthAttempt: Equatable {
+        case idle
+        case inProgress
+        /// Shown under the unlock button until the next try.
+        case failed(String)
+    }
 
     func authenticate() async -> Bool {
-        guard !authenticating else { return false }
-        authenticating = true
-        defer { authenticating = false }
+        guard attempt != .inProgress else { return false }
+        attempt = .inProgress
         do {
             let success = try await LAContext().evaluatePolicy(.deviceOwnerAuthentication,
                 localizedReason: "Reveal your TipTrack earnings")
             unlocked = success
-            message = nil
+            attempt = .idle
             return success
         } catch {
-            message = "Authentication was not completed. Your earnings remain hidden."
+            attempt = .failed("Authentication was not completed. Your earnings remain hidden.")
             return false
         }
     }

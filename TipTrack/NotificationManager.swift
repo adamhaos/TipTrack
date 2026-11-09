@@ -9,7 +9,7 @@ import Observation
 final class NotificationManager {
     static let shared = NotificationManager()
 
-    private enum DefaultsKey {
+    enum DefaultsKey {
         static let isReminderEnabled = "isReminderEnabled"
         static let isTimeSensitive = "isTimeSensitive"
         static let reminderTime = "reminderTime"
@@ -53,7 +53,7 @@ final class NotificationManager {
     /// Active days of the week for notifications (Calendar weekday integers: 1 = Sun, 2 = Mon, ..., 7 = Sat).
     var activeDays: Set<Int> {
         didSet {
-            UserDefaults.standard.set(Array(activeDays), forKey: DefaultsKey.activeDays)
+            UserDefaults.standard.set(activeDays.sorted(), forKey: DefaultsKey.activeDays)
             if isReminderEnabled {
                 Task {
                     await updateNotificationScheduling()
@@ -92,6 +92,22 @@ final class NotificationManager {
         
         Task {
             await checkAuthorization()
+        }
+    }
+
+    /// Picks up a reminder time, weekdays or Time Sensitive choice changed on
+    /// another device; the property observers reschedule when reminders are on.
+    func reloadSyncedSchedule() {
+        let defaults = UserDefaults.standard
+        if let time = defaults.object(forKey: DefaultsKey.reminderTime) as? Date, time != reminderTime {
+            reminderTime = time
+        }
+        if let days = defaults.array(forKey: DefaultsKey.activeDays) as? [Int], Set(days) != activeDays {
+            activeDays = Set(days)
+        }
+        let timeSensitive = defaults.bool(forKey: DefaultsKey.isTimeSensitive)
+        if timeSensitive != isTimeSensitive {
+            isTimeSensitive = timeSensitive
         }
     }
     

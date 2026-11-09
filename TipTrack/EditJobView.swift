@@ -164,7 +164,8 @@ struct EditJobView: View {
                 Label("Add Schedule Calendar", systemImage: "plus.circle.fill")
             }
             if let status = schedule.status[job.id] {
-                Text(status).font(.caption).foregroundStyle(.secondary)
+                Text(status.message).font(.caption)
+                    .foregroundStyle(status.needsAttention ? .orange : .secondary)
             }
             if let help = URL(string: "https://kb.7shifts.com/hc/en-us/articles/4861793532691-Sync-Your-7shifts-Schedule-with-Google-and-Apple-Calendar") {
                 Link("How to get a 7shifts calendar link", destination: help)

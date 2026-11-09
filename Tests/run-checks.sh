@@ -30,3 +30,6 @@ xcrun swiftc -module-cache-path "$check_dir/cache" \
 xcrun swiftc -module-cache-path "$check_dir/cache" \
     TipTrack/EarningsInsights.swift Tests/EarningsInsightsChecks.swift -o "$check_dir/insights"
 "$check_dir/insights"
+xcrun swiftc -module-cache-path "$check_dir/cache" \
+    TipTrack/CloudSyncStatus.swift Tests/CloudSyncChecks.swift -o "$check_dir/cloudsync"
+"$check_dir/cloudsync"
