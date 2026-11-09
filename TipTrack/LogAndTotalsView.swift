@@ -616,7 +616,7 @@ struct LogAndTotalsView: View {
             }
         } label: {
             Text("TipTrack3r")
-                .font(.title2.bold())
+                .font(.title3.bold())
                 .foregroundStyle(.primary)
                 .fixedSize()
         }
@@ -624,7 +624,7 @@ struct LogAndTotalsView: View {
         .accessibilityHint("Share TipTrack3r")
     }
 
-    /// Picks which job the dashboard stats show. Sits beside the settings gear (only with two
+    /// Picks which job the dashboard stats show. Sits beside the Calendar button (only with two
     /// or more jobs) so the toolbar is balanced around the centered title. The icon fills in
     /// the job's color while a single job is showing, and the cards name it.
     private var statsJobMenu: some View {
@@ -632,13 +632,17 @@ struct LogAndTotalsView: View {
             Picker("Show Stats For", selection: $statsJobID) {
                 Label("All Jobs", systemImage: "square.stack.3d.up").tag(nil as UUID?)
                 ForEach(jobs) { job in
-                    Label(job.name, systemImage: job.iconSymbolName).tag(Optional(job.id))
+                    Label {
+                        Text(job.name)
+                    } icon: {
+                        jobMenuIcon(job)
+                    }
+                    .tag(Optional(job.id))
                 }
             }
         } label: {
             Image(systemName: statsJob == nil
                 ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
-                .imageScale(.large)
                 .foregroundStyle(isFormExpanded ? Color.gray
                     : statsJob.map { Color(hex: $0.colorHex) }
                     ?? (colorfulTheme ? Color.purple : Color.accentColor))
@@ -648,13 +652,23 @@ struct LogAndTotalsView: View {
         .accessibilityValue(statsJob?.name ?? "All Jobs")
     }
 
+    /// A job's icon in its own color. Menus redraw plain symbols in one color, so the color
+    /// is baked into the image.
+    private func jobMenuIcon(_ job: Job) -> Image {
+        let color = UIColor(Color(hex: job.colorHex))
+        guard let symbol = UIImage(systemName: job.iconSymbolName) else {
+            return Image(systemName: job.iconSymbolName)
+        }
+        return Image(uiImage: symbol.withTintColor(color, renderingMode: .alwaysOriginal))
+    }
+
     private var dashboardPresentation: some View {
             dashboardLayout
             .appTitleToolbar(appTitleMenu)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // Gear and job filter share the left; History and Calendar the right.
+                // Gear and History share the left; job filter and Calendar the right.
                 ToolbarItemGroup(placement: .topBarLeading) {
                     Button {
                         presentSettings()
@@ -664,13 +678,7 @@ struct LogAndTotalsView: View {
                             .foregroundStyle(isFormExpanded ? Color.gray : (colorfulTheme ? Color.pink : Color.accentColor))
                     }
                     .disabled(isFormExpanded)
-                    if jobs.count > 1 { statsJobMenu }
-                }
-            }
-            .toolbar {
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    // Calendar and History each have their own button. On a wide iPad both
-                    // are always open beside the dashboard, with their own tabs there.
+                    // On a wide iPad History is always open in the side pane.
                     if !isWideLayout {
                         Button {
                             presentHistory()
@@ -680,6 +688,14 @@ struct LogAndTotalsView: View {
                         }
                             .disabled(isFormExpanded)
                             .accessibilityLabel("Shift History")
+                    }
+                }
+            }
+            .toolbar {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    if jobs.count > 1 { statsJobMenu }
+                    // On a wide iPad the calendar is always open in the side pane.
+                    if !isWideLayout {
                         Button {
                             presentCalendar()
                         } label: {
