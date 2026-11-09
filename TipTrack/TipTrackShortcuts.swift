@@ -32,9 +32,12 @@ enum TipInsightQuestion: String, AppEnum {
 struct TipTrackJobEntity: AppEntity {
     static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Job")
     static let defaultQuery = TipTrackJobQuery()
+    // Job names can reveal where someone works, so Siri must authenticate before showing them.
+    static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
 
     let id: UUID
-    @Property(title: "Name") var name: String
+    @Property(title: "Name", description: "The name of a workplace or job where the person logs tipped shifts, such as a restaurant or bar.")
+    var name: String
 
     init(id: UUID, name: String) {
         self.id = id
@@ -196,14 +199,18 @@ enum TipTrackIntentStore {
 
 }
 
+@AppIntent(.tool)
 struct AskTipInsightsIntent: AppIntent {
     static let title: LocalizedStringResource = "Ask About Best Shifts"
     static let description = IntentDescription("Ask about your best-paying job, average earnings per shift, or best shift. Defaults to this month across all jobs.")
     static let authenticationPolicy: IntentAuthenticationPolicy = .requiresLocalDeviceAuthentication
     static let openAppWhenRun = false
-    @Parameter(title: "Question", default: .averagePerShift) var question: TipInsightQuestion
-    @Parameter(title: "Period", default: .thisMonth) var period: TipPeriod
-    @Parameter(title: "Job") var job: TipTrackJobEntity?
+    @Parameter(title: "Question", description: "Which insight to compute: the job with the highest total earnings, the average earnings per logged shift, or the single highest-earning shift.", default: .averagePerShift)
+    var question: TipInsightQuestion
+    @Parameter(title: "Period", description: "The time range to look at, relative to today. Weeks follow the person's chosen first day of the week.", default: .thisMonth)
+    var period: TipPeriod
+    @Parameter(title: "Job", description: "Limit the answer to one job. Leave empty to include every job.")
+    var job: TipTrackJobEntity?
 
     static var parameterSummary: some ParameterSummary {
         Summary("Get \(\.$question) for \(\.$period)") { \.$job }
@@ -240,38 +247,40 @@ struct AskTipInsightsIntent: AppIntent {
     }
 }
 
+@AppIntent(.tool)
 struct AskTipTrackIntent: AppIntent {
     static let title: LocalizedStringResource = "Ask About Tips"
     static let description = IntentDescription("Get earnings and timed-shift hourly averages across all jobs for your chosen period. Prompts for the period if it cannot be determined.")
     static let authenticationPolicy: IntentAuthenticationPolicy = .requiresLocalDeviceAuthentication
     static let openAppWhenRun = false
 
-    @Parameter(title: "Period", requestValueDialog: "Which time period would you like?", requestDisambiguationDialog: "Which time period?")
+    @Parameter(title: "Period", description: "The time range to total, relative to today, such as today, last week, or this month. Weeks follow the person's chosen first day of the week.", requestValueDialog: "Which time period would you like?", requestDisambiguationDialog: "Which time period?")
     var period: TipPeriod
 
-    @Parameter(title: "Job", requestDisambiguationDialog: "Which job?")
+    @Parameter(title: "Job", description: "Limit the total to one job. Leave empty to include every job.", requestDisambiguationDialog: "Which job?")
     var job: TipTrackJobEntity?
 
     static var parameterSummary: some ParameterSummary {
         Summary("Get earnings for \(\.$period)") { \.$job }
     }
 
-    func perform() async throws -> some IntentResult & ReturnsValue<Double> & ProvidesDialog {
+    func perform() async throws -> some IntentResult & ReturnsValue<Double> & ProvidesDialog & ShowsSnippetView {
         try await TipTrackSiriPrivacy.authorize(revealsEarnings: true)
         let now = Date()
         let result = try await TipTrackIntentStore.summary(period: period, jobID: job?.id, now: now)
         let jobName = job.map { " at \($0.name)" } ?? ""
         let calendar = await Calendar.preferredWeek
         let periodName = TipTrackSiriRules.periodDescription(period, now: now, calendar: calendar)
+        let card = TipTrackEarningsCard(period: periodName, job: job?.name, total: result.total, shifts: result.count, hourly: result.hourly)
         if result.count == 0 {
-            return .result(value: 0, dialog: "There are no logged shifts \(periodName)\(jobName).")
+            return .result(value: 0, dialog: "There are no logged shifts \(periodName)\(jobName).", view: card)
         }
         if let hourly = result.hourly {
             return .result(value: result.total,
-                dialog: "You made \(result.total, format: .currency(code: "USD")) \(periodName)\(jobName) across \(result.count) shifts, averaging \(hourly, format: .currency(code: "USD")) per hour.")
+                dialog: "You made \(result.total, format: .currency(code: "USD")) \(periodName)\(jobName) across \(result.count) shifts, averaging \(hourly, format: .currency(code: "USD")) per hour.", view: card)
         }
         return .result(value: result.total,
-            dialog: "You made \(result.total, format: .currency(code: "USD")) \(periodName)\(jobName) across \(result.count) shifts.")
+            dialog: "You made \(result.total, format: .currency(code: "USD")) \(periodName)\(jobName) across \(result.count) shifts.", view: card)
     }
 }
 
@@ -322,8 +331,10 @@ struct LogShiftIntent: AppIntent {
     }
 }
 
+@AppIntent(.tool)
 struct ViewTipHistoryIntent: AppIntent {
     static let title: LocalizedStringResource = "View Tip History"
+    static let description = IntentDescription("Opens Tip Tracker to the list of past logged shifts.")
     static let openAppWhenRun = true
     func perform() async throws -> some IntentResult {
         await TipTrackIntentNavigation.open(.history)
@@ -331,8 +342,10 @@ struct ViewTipHistoryIntent: AppIntent {
     }
 }
 
+@AppIntent(.tool)
 struct OpenShiftCalendarIntent: AppIntent {
     static let title: LocalizedStringResource = "Open Shift Calendar"
+    static let description = IntentDescription("Opens Tip Tracker to the calendar of logged and scheduled shifts.")
     static let openAppWhenRun = true
     func perform() async throws -> some IntentResult {
         await TipTrackIntentNavigation.open(.calendar)
@@ -380,5 +393,36 @@ struct TipTrackShortcuts: AppShortcutsProvider {
             shortTitle: "Tip History", systemImageName: "clock.arrow.circlepath")
         AppShortcut(intent: OpenShiftCalendarIntent(), phrases: ["Open my shift calendar in \(.applicationName)"],
             shortTitle: "Shift Calendar", systemImageName: "calendar")
+    }
+}
+
+/// Siri result card for "Ask About Tips". Static content only: Siri renders it ahead of display.
+struct TipTrackEarningsCard: View {
+    let period: String
+    let job: String?
+    let total: Double
+    let shifts: Int
+    let hourly: Double?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(job.map { "\($0) · \(period)" } ?? period.capitalized)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Text(total, format: .currency(code: "USD"))
+                .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                .foregroundStyle(.green)
+            HStack(spacing: 16) {
+                Label("\(shifts) \(shifts == 1 ? "shift" : "shifts")", systemImage: "calendar")
+                if let hourly {
+                    Label("\(hourly.formatted(.currency(code: "USD")))/hr", systemImage: "clock")
+                }
+            }
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .accessibilityElement(children: .combine)
     }
 }
