@@ -38,7 +38,7 @@ struct AppearanceSettingsView: View {
             } header: {
                 Text("Color & Theme")
             } footer: {
-                Text("Colorful gives each homepage card its own color.")
+                Text("Changes the app's colors. System follows your iPhone's light or dark mode, Colorful gives each homepage card its own color, and Job Color uses your default job's color.")
             }
 
             Section {
@@ -50,7 +50,7 @@ struct AppearanceSettingsView: View {
             } header: {
                 Text("Home Headline")
             } footer: {
-                Text("The number shown at the top of your homepage.")
+                Text("The big number at the top of your homepage, such as today's earnings.")
             }
 
             Section {
@@ -87,13 +87,13 @@ struct AppearanceSettingsView: View {
                         .textCase(nil)
                 }
             } footer: {
-                Text("Tap Edit to drag cards into a new order.")
+                Text("Turn cards on or off to choose what the homepage shows. Tap Edit to drag them into a new order.")
             }
 
             Section {
                 Button("Reset Appearance to Default", action: resetAppearance)
             } footer: {
-                Text("Restores the default homepage, headline and theme.")
+                Text("Puts the theme, top number and homepage cards back to how they started. Your shifts aren't affected.")
             }
         }
         .navigationTitle("Appearance")
@@ -151,42 +151,36 @@ struct SmartEntrySettingsView: View {
     var body: some View {
         Form {
             Section {
+                Toggle("Hourly Pay Per Shift", isOn: $hourlyPayEnabled)
+                Toggle("Shift Notes", isOn: $shiftNotes)
+            } header: {
+                Text("Extra Fields")
+            } footer: {
+                Text("Hourly pay adds a rate field so your base pay counts toward earnings. Notes adds a short note to each shift, like “Private party.”")
+            }
+            Section {
                 Toggle("Live Shift Timer", isOn: $liveTimer)
             } header: {
                 Text("Shift Timer")
             } footer: {
-                Text("Time your shift from the app, a widget or Control Center, then use those hours when you log it.")
-            }
-            Section {
-                Toggle("Hourly Pay Per Shift", isOn: $hourlyPayEnabled)
-            } header: {
-                Text("Hourly Pay")
-            } footer: {
-                Text("Adds an hourly-rate field so base pay counts toward your earnings.")
-            }
-            Section {
-                Toggle("Shift Notes", isOn: $shiftNotes)
-            } header: {
-                Text("Notes")
-            } footer: {
-                Text("Adds a note field to each shift, like “Private party.”")
-            }
-            Section {
-                Toggle("High-Value Entry Alerts", isOn: $entryValidation)
-            } header: {
-                Text("Entry Safety")
-            } footer: {
-                Text("Double-checks unusually large amounts before saving.")
+                Text("Start a timer when you clock in, from the app, a widget or Control Center. When you log the shift, its hours fill in for you.")
             }
             Section {
                 Toggle("Checkout Slip Scanner", isOn: $receiptFeatures)
             } header: {
-                Text("Checkout Slip Scanning")
+                Text("Slip Scanner")
             } footer: {
-                Text("Reads tips and tip-out from a photo of your checkout slip.")
+                Text("Adds a Scan Checkout Slip button to Log Shift that reads your tips and tip-out from a photo of your checkout slip. You check the numbers before saving.")
+            }
+            Section {
+                Toggle("High-Value Entry Alerts", isOn: $entryValidation)
+            } header: {
+                Text("Mistake Check")
+            } footer: {
+                Text("Asks you to confirm before saving an amount that looks unusually large, to catch typos like an extra zero.")
             }
         }
-        .navigationTitle("Smart Entry")
+        .navigationTitle("Logging Options")
     }
 }
 
@@ -202,12 +196,20 @@ struct CalendarFeatureSettingsView: View {
                         Text(Calendar.current.weekdaySymbols[weekday - 1]).tag(weekday)
                     }
                 }
-                Toggle("Show Earnings on Past Days", isOn: $calendarEarnings)
+            } header: {
+                Text("Weeks")
             } footer: {
-                Text("Weekly totals, widgets and Siri all follow your week start.")
+                Text("Decides where each week begins for weekly totals, the calendar, widgets and Siri.")
+            }
+            Section {
+                Toggle("Show Earnings on Past Days", isOn: $calendarEarnings)
+            } header: {
+                Text("Calendar")
+            } footer: {
+                Text("Shows what you made under each past day on the calendar. Turn off for a cleaner calendar with just your shifts.")
             }
         }
-        .navigationTitle("Calendar")
+        .navigationTitle("Calendar & Weeks")
     }
 }
 
@@ -255,7 +257,9 @@ struct RemindersSettingsView: View {
             } header: {
                 Text("Every Day")
             } footer: {
-                Text("A nudge to log your tips on the days you pick.")
+                Text(notifications.isReminderEnabled
+                    ? "A nudge at this time on the days you pick. Show During Focus lets it through a Focus like Do Not Disturb."
+                    : "A nudge at the same time each day to log your tips, whether or not you have a schedule.")
             }
 
             Section {
@@ -271,7 +275,7 @@ struct RemindersSettingsView: View {
             } header: {
                 Text("Scheduled Shifts")
             } footer: {
-                Text("Uses the schedule calendars added to your jobs.")
+                Text("A heads-up before each shift starts, using the schedule calendars added to your jobs.")
             }
 
             Section {
@@ -293,7 +297,7 @@ struct RemindersSettingsView: View {
             } header: {
                 Text("Log Your Shift")
             } footer: {
-                Text("Reminds you to log tips around the end of each scheduled shift. Skips shifts you've already logged.")
+                Text("Reminds you to log tips around the end of each scheduled shift, per job. Skips shifts you've already logged.")
             }
         }
         .navigationTitle("Reminders")
@@ -384,18 +388,20 @@ struct SystemGuidanceSettingsView: View {
                     .font(.subheadline)
             } header: {
                 Text("Widgets")
+            } footer: {
+                Text("Widgets show your earnings on the Home Screen or Lock Screen without opening the app.")
             }
 
             Section {
                 Button("Show Welcome Guide") {
                     showingWelcomeGuide = true
                 }
-                Toggle("Feature Tips", isOn: $onboarding)
+                Toggle("Welcome Guide for New Installs", isOn: $onboarding)
                 Toggle("Always Show Insights Label", isOn: $alwaysShowInsightsLabel)
             } header: {
                 Text("Help")
             } footer: {
-                Text("Feature tips show the welcome guide on first launch. The Insights label normally hides after you've used it a few times.")
+                Text("Show Welcome Guide replays the intro tour any time. The Insights label is the word next to the Insights button on the homepage; it normally hides after you've used it a few times.")
             }
         }
         .navigationTitle("Siri, Widgets & Help")

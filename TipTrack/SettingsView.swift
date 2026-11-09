@@ -9,59 +9,72 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("General") {
+                Section {
                     NavigationLink { JobsSettingsView() } label: {
                         SettingsDestinationLabel(title: "Jobs",
-                            subtitle: "Schedules, default job and automatic selection",
+                            subtitle: "Your workplaces, their schedules and which one is picked when you log",
                             icon: "briefcase.fill", color: .brown)
                     }
-                    NavigationLink { CalendarFeatureSettingsView() } label: {
-                        SettingsDestinationLabel(title: "Calendar",
-                            subtitle: "Week start and daily earnings",
-                            icon: "calendar", color: .blue)
+                    NavigationLink { SmartEntrySettingsView() } label: {
+                        SettingsDestinationLabel(title: "Logging Options",
+                            subtitle: "Extra fields and tools on the Log Shift screen",
+                            icon: "wand.and.stars", color: .orange)
                     }
                     NavigationLink { RemindersSettingsView() } label: {
                         SettingsDestinationLabel(title: "Reminders",
-                            subtitle: "Daily and scheduled shift reminders",
+                            subtitle: "Nudges to log your tips and heads-ups before shifts",
                             icon: "bell.fill", color: .red)
                     }
-                    NavigationLink { SmartEntrySettingsView() } label: {
-                        SettingsDestinationLabel(title: "Smart Entry",
-                            subtitle: "Timer, hourly pay, notes and scanning",
-                            icon: "wand.and.stars", color: .orange)
-                    }
+                } header: {
+                    Text("Logging Shifts")
                 }
 
-                Section("Data") {
+                Section {
                     NavigationLink { DataManagementSettingsView() } label: {
-                        SettingsDestinationLabel(title: "Sync, Import & Export", subtitle: "iCloud, backups, CSV and deleted shifts",
+                        SettingsDestinationLabel(title: "Sync, Import & Export",
+                            subtitle: "iCloud, daily backups, CSV files and deleted shifts",
                             icon: "arrow.up.arrow.down.circle.fill", color: .green)
                     }
                     NavigationLink { PrivacySettingsView() } label: {
-                        SettingsDestinationLabel(title: "Privacy", subtitle: "Face ID, hidden earnings and Spotlight",
+                        SettingsDestinationLabel(title: "Privacy",
+                            subtitle: "Face ID lock, hidden earnings and search",
                             icon: "faceid", color: .gray)
                     }
+                } header: {
+                    Text("Your Data")
                 }
 
-                Section("Extra Features & Help") {
+                Section {
                     NavigationLink { AppearanceSettingsView() } label: {
                         SettingsDestinationLabel(title: "Appearance",
-                            subtitle: "Theme, headline and homepage cards",
+                            subtitle: "Theme, the top number and which homepage cards show",
                             icon: "paintpalette.fill", color: .purple)
                     }
+                    NavigationLink { CalendarFeatureSettingsView() } label: {
+                        SettingsDestinationLabel(title: "Calendar & Weeks",
+                            subtitle: "First day of the week and earnings on the calendar",
+                            icon: "calendar", color: .blue)
+                    }
+                } header: {
+                    Text("Display")
+                }
+
+                Section {
                     // An Apple Watch pairs only with iPhone, so iPad leaves this out.
                     if WCSession.isSupported() {
                         NavigationLink { WatchSettingsView() } label: {
                             SettingsDestinationLabel(title: "Apple Watch",
-                                subtitle: "Earnings, live timer and sync",
+                                subtitle: "What your watch shows, and syncing to it",
                                 icon: "applewatch", color: .pink)
                         }
                     }
                     NavigationLink { SystemGuidanceSettingsView() } label: {
                         SettingsDestinationLabel(title: "Siri, Widgets & Help",
-                            subtitle: "Siri, widgets and the welcome guide",
+                            subtitle: "What to ask Siri, adding widgets and the welcome guide",
                             icon: "questionmark.circle.fill", color: .yellow)
                     }
+                } header: {
+                    Text("More")
                 }
             }
             .listSectionSpacing(12)
@@ -113,21 +126,29 @@ private struct DataManagementSettingsView: View {
                 Text("Keeps a CSV of your shifts for each of the last seven days in TipTrack's folder in the Files app.")
             }
 
-            Section("Import Shifts") {
+            Section {
                 Button {
                     isShowingImport = true
                 } label: {
                     Label("Import from CSV", systemImage: "square.and.arrow.down")
                 }
+            } header: {
+                Text("Import Shifts")
+            } footer: {
+                Text("Adds shifts from a spreadsheet file, like an export from TipTrack or another app. You'll see a preview before anything is saved.")
             }
 
-            Section("Export Shifts") {
+            Section {
                 ShareLink(
                     item: exportText,
                     preview: SharePreview("TipTrack Shift Export.csv", image: Image(systemName: "tablecells"))
                 ) {
                     Label("Export All Shifts to CSV", systemImage: "square.and.arrow.up")
                 }
+            } header: {
+                Text("Export Shifts")
+            } footer: {
+                Text("Makes a spreadsheet of every shift you can save to Files, email or open in Numbers or Excel.")
             }
 
             Section {
@@ -137,7 +158,7 @@ private struct DataManagementSettingsView: View {
             } header: {
                 Text("Recently Deleted")
             } footer: {
-                Text("Restore shifts you've removed.")
+                Text("Shifts you delete wait here so you can bring them back.")
             }
         }
         .protectEarnings()
@@ -245,12 +266,12 @@ private struct SettingsDestinationLabel: View {
                 .frame(width: 28, height: 28)
                 .background(color, in: RoundedRectangle(cornerRadius: 7))
 
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(.body)
                     .foregroundStyle(.primary)
                 Text(subtitle)
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
