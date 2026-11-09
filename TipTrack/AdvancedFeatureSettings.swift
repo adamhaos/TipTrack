@@ -50,7 +50,7 @@ struct AppearanceSettingsView: View {
             } header: {
                 Text("Home Headline")
             } footer: {
-                Text("The big number at the top of your homepage, such as today's earnings.")
+                Text("The headline number at the top of your homepage, such as today's earnings.")
             }
 
             Section {
@@ -93,7 +93,7 @@ struct AppearanceSettingsView: View {
             Section {
                 Button("Reset Appearance to Default", action: resetAppearance)
             } footer: {
-                Text("Puts the theme, top number and homepage cards back to how they started. Your shifts aren't affected.")
+                Text("Resets the theme, headline number and homepage cards to their defaults. Your shifts aren't affected.")
             }
         }
         .navigationTitle("Appearance")
@@ -156,7 +156,7 @@ struct SmartEntrySettingsView: View {
             } header: {
                 Text("Extra Fields")
             } footer: {
-                Text("Hourly pay adds a rate field so your base pay counts toward earnings. Notes adds a short note to each shift, like “Private party.”")
+                Text("Add an hourly rate when you log a shift so base pay counts toward your earnings, or a note such as “Private party.”")
             }
             Section {
                 Toggle("Live Shift Timer", isOn: $liveTimer)
@@ -173,9 +173,9 @@ struct SmartEntrySettingsView: View {
                 Text("Adds a Scan Checkout Slip button to Log Shift that reads your tips and tip-out from a photo of your checkout slip. You check the numbers before saving.")
             }
             Section {
-                Toggle("High-Value Entry Alerts", isOn: $entryValidation)
+                Toggle("Confirm Large Amounts", isOn: $entryValidation)
             } header: {
-                Text("Mistake Check")
+                Text("Entry Check")
             } footer: {
                 Text("Asks you to confirm before saving an amount that looks unusually large, to catch typos like an extra zero.")
             }
@@ -258,8 +258,8 @@ struct RemindersSettingsView: View {
                 Text("Every Day")
             } footer: {
                 Text(notifications.isReminderEnabled
-                    ? "A nudge at this time on the days you pick. Show During Focus lets it through a Focus like Do Not Disturb."
-                    : "A nudge at the same time each day to log your tips, whether or not you have a schedule.")
+                    ? "A nudge at this time on the days you pick. Show During Focus marks it Time Sensitive so it can come through a Focus like Do Not Disturb, if your iPhone allows it."
+                    : "A nudge to log your tips at a set time on the days you pick, whether or not you have a schedule.")
             }
 
             Section {
@@ -396,12 +396,12 @@ struct SystemGuidanceSettingsView: View {
                 Button("Show Welcome Guide") {
                     showingWelcomeGuide = true
                 }
-                Toggle("Welcome Guide for New Installs", isOn: $onboarding)
+                Toggle("Show Welcome Guide on First Launch", isOn: $onboarding)
                 Toggle("Always Show Insights Label", isOn: $alwaysShowInsightsLabel)
             } header: {
                 Text("Help")
             } footer: {
-                Text("Show Welcome Guide replays the intro tour any time. The Insights label is the word next to the Insights button on the homepage; it normally hides after you've used it a few times.")
+                Text("Show Welcome Guide replays the intro tour any time; the switch only matters on a fresh install. The Insights label is the word next to the Insights button on the homepage; it normally hides after you've used it a few times.")
             }
         }
         .navigationTitle("Siri, Widgets & Help")

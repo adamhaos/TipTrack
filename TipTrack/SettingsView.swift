@@ -12,7 +12,7 @@ struct SettingsView: View {
                 Section {
                     NavigationLink { JobsSettingsView() } label: {
                         SettingsDestinationLabel(title: "Jobs",
-                            subtitle: "Your workplaces, their schedules and which one is picked when you log",
+                            subtitle: "Workplaces, schedules and your default job",
                             icon: "briefcase.fill", color: .brown)
                     }
                     NavigationLink { SmartEntrySettingsView() } label: {
@@ -37,7 +37,7 @@ struct SettingsView: View {
                     }
                     NavigationLink { PrivacySettingsView() } label: {
                         SettingsDestinationLabel(title: "Privacy",
-                            subtitle: "Face ID lock, hidden earnings and search",
+                            subtitle: "Face ID lock, hidden earnings and Spotlight",
                             icon: "faceid", color: .gray)
                     }
                 } header: {
@@ -47,7 +47,7 @@ struct SettingsView: View {
                 Section {
                     NavigationLink { AppearanceSettingsView() } label: {
                         SettingsDestinationLabel(title: "Appearance",
-                            subtitle: "Theme, the top number and which homepage cards show",
+                            subtitle: "Theme, headline number and homepage cards",
                             icon: "paintpalette.fill", color: .purple)
                     }
                     NavigationLink { CalendarFeatureSettingsView() } label: {
@@ -158,7 +158,7 @@ private struct DataManagementSettingsView: View {
             } header: {
                 Text("Recently Deleted")
             } footer: {
-                Text("Shifts you delete wait here so you can bring them back.")
+                Text("Review and restore shifts you've deleted.")
             }
         }
         .protectEarnings()
