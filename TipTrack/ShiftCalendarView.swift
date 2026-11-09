@@ -136,7 +136,7 @@ struct ShiftCalendarView: View {
                             .disabled(!showsReturnToToday)
                             .accessibilityLabel("Return calendar to today")
                         }
-                        // Months change with the arrows; a sideways swipe switches to History.
+                        // Months change with the arrows.
                         HStack(spacing: 10) {
                             Button { move(-1) } label: {
                                 Image(systemName: "chevron.left").font(.subheadline.weight(.semibold))
