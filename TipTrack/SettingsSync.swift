@@ -5,8 +5,13 @@ import Foundation
 /// Jobs (with their schedule links, colors and reminders) and shifts sync on their
 /// own through CloudKit; this covers the settings that live outside the database.
 ///
+/// The daily reminder's time, weekdays and Time Sensitive choice sync too, so
+/// every device reminds at the same time.
+///
 /// Device-only choices stay local: Face ID lock, hidden earnings, Spotlight,
-/// whether iCloud sync is on, and the daily reminder notifications.
+/// whether iCloud sync is on, and whether daily reminders are turned on (each
+/// device needs its own notification permission, and a device that is denied
+/// would otherwise switch reminders off everywhere).
 @MainActor
 final class SettingsSync {
     static let shared = SettingsSync()
@@ -23,7 +28,12 @@ final class SettingsSync {
         FeatureKeys.hourlyRate, FeatureKeys.watchShowEarnings, FeatureKeys.watchShowTotals,
         FeatureKeys.watchShowLiveTimer, "automaticJobSelection", "insightsDiscoveryCount",
         "onboarding.completed",
-    ]
+    ] + reminderKeys
+
+    /// The daily reminder schedule; a change from another device reschedules
+    /// this device's reminders.
+    static let reminderKeys: [String] = [NotificationManager.DefaultsKey.reminderTime,
+        NotificationManager.DefaultsKey.activeDays, NotificationManager.DefaultsKey.isTimeSensitive]
 
     private let cloud = NSUbiquitousKeyValueStore.default
     private let local = UserDefaults.standard
@@ -62,11 +72,16 @@ final class SettingsSync {
         let wanted = keys.map { Set($0).intersection(Self.syncedKeys) } ?? Set(Self.syncedKeys)
         applyingRemote = true
         defer { applyingRemote = false }
+        var applied: [String] = []
         for key in wanted {
             guard let value = cloud.object(forKey: key) else { continue }
             if !Self.same(local.object(forKey: key), value) {
                 local.set(value, forKey: key)
+                applied.append(key)
             }
+        }
+        if !Set(applied).isDisjoint(with: Self.reminderKeys) {
+            NotificationManager.shared.reloadSyncedSchedule()
         }
     }
 

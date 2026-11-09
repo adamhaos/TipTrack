@@ -14,7 +14,25 @@ struct ImportCSVView: View {
     @State private var parsedRows: [TipTrackCSV.Row] = []
     @State private var isShowingFileImporter = false
     @State private var selectedFileName: String?
-    @State private var statusMessage: String?
+    @State private var status: ImportStatus?
+
+    /// The note under the import fields. A problem is always shown in red, even when
+    /// rows from an earlier read are still listed.
+    private enum ImportStatus {
+        case info(String)
+        case problem(String)
+
+        var text: String {
+            switch self {
+            case .info(let text), .problem(let text): text
+            }
+        }
+
+        var isProblem: Bool {
+            if case .problem = self { return true }
+            return false
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -22,11 +40,11 @@ struct ImportCSVView: View {
                 fileSection
                 pasteSection
 
-                if let statusMessage {
+                if let status {
                     Section {
-                        Text(statusMessage)
+                        Text(status.text)
                             .font(.subheadline)
-                            .foregroundStyle(parsedRows.isEmpty ? .red : .secondary)
+                            .foregroundStyle(status.isProblem ? .red : .secondary)
                     }
                 }
 
@@ -58,7 +76,7 @@ struct ImportCSVView: View {
                 case .success(let url):
                     loadCSVFile(from: url)
                 case .failure(let error):
-                    statusMessage = "Could not open the CSV file: \(error.localizedDescription)"
+                    status = .problem("Could not open the CSV file: \(error.localizedDescription)")
                 }
             }
         }
@@ -163,7 +181,7 @@ struct ImportCSVView: View {
             parseCSV()
         } catch {
             parsedRows = []
-            statusMessage = "Could not read \(url.lastPathComponent): \(error.localizedDescription)"
+            status = .problem("Could not read \(url.lastPathComponent): \(error.localizedDescription)")
         }
     }
 
@@ -172,15 +190,15 @@ struct ImportCSVView: View {
         parsedRows = result.rows
 
         if result.rows.isEmpty {
-            statusMessage = "No valid shifts were found. Make sure the file uses the TipTrack CSV format."
+            status = .problem("No valid shifts were found. Make sure the file uses the TipTrack CSV format.")
         } else if result.rejectedRowCount > 0 {
-            statusMessage = "Found \(result.rows.count) shifts. Skipped \(result.rejectedRowCount) invalid row(s)."
+            status = .info("Found \(result.rows.count) shifts. Skipped \(result.rejectedRowCount) invalid row(s).")
         } else {
             let duplicates = duplicateProtection
                 ? result.rows.count - TipTrackCSV.rowsForImport(result.rows, existingShifts: existingShifts).count : 0
-            statusMessage = duplicates > 0
+            status = .info(duplicates > 0
                 ? "Ready to import \(result.rows.count - duplicates) new shifts. \(duplicates) likely duplicate\(duplicates == 1 ? "" : "s") will be skipped."
-                : "Ready to import \(result.rows.count) shifts."
+                : "Ready to import \(result.rows.count) shifts.")
         }
     }
 
@@ -217,13 +235,13 @@ struct ImportCSVView: View {
         do {
             try modelContext.save()
             if skippedDuplicates == parsedRows.count {
-                statusMessage = "Nothing was imported because every row already exists."
+                status = .info("Nothing was imported because every row already exists.")
             } else {
                 dismiss()
             }
         } catch {
             modelContext.rollback()
-            statusMessage = "The shifts were read, but could not be saved: \(error.localizedDescription)"
+            status = .problem("The shifts were read, but could not be saved: \(error.localizedDescription)")
         }
     }
 

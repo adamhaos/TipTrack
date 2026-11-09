@@ -15,7 +15,8 @@ final class ScheduleStore {
         var sources: [String: String] = [:]
     }
     var events: [ScheduledShift] = []
-    var status: [UUID: String] = [:]
+    /// How each job's last schedule refresh went, keyed by job ID.
+    var status: [UUID: FeedRefreshStatus] = [:]
     var refreshing = false
     var notificationMessage: String?
     private var cache = Cache()
@@ -140,13 +141,11 @@ final class ScheduleStore {
                     cache.refreshed[job.id.uuidString] = Date()
                     cache.sources[job.id.uuidString] = source
                     status[job.id] = failures.isEmpty
-                        ? "\(importedForJob.count) shifts from \(feeds.count) calendar\(feeds.count == 1 ? "" : "s")"
-                        : "\(importedForJob.count) shifts downloaded; \(failures.count) calendar\(failures.count == 1 ? "" : "s") could not refresh"
+                        ? .refreshed(shifts: importedForJob.count, calendars: feeds.count)
+                        : .partial(shifts: importedForJob.count, failedCalendars: failures.count)
                 } else {
                     cache.sources[job.id.uuidString] = source
-                    status[job.id] = events.contains { $0.jobID == job.id }
-                        ? "Could not refresh any calendar. Previously downloaded shifts are retained."
-                        : "Could not refresh any calendar."
+                    status[job.id] = .failed(keptPrevious: events.contains { $0.jobID == job.id })
                 }
             }
             events.sort { $0.start < $1.start }
@@ -243,6 +242,35 @@ final class ScheduleStore {
         for (_, request) in requests.sorted(by: { $0.0 < $1.0 }).prefix(50) {
             do { try await center.add(request) } catch { notificationMessage = "Some shift reminders could not be scheduled." }
         }
+    }
+}
+
+/// The outcome of refreshing one job's schedule calendars.
+enum FeedRefreshStatus: Equatable {
+    /// Every calendar downloaded.
+    case refreshed(shifts: Int, calendars: Int)
+    /// Some calendars failed; their previously downloaded shifts were kept.
+    case partial(shifts: Int, failedCalendars: Int)
+    /// No calendar downloaded.
+    case failed(keptPrevious: Bool)
+
+    var message: String {
+        switch self {
+        case .refreshed(let shifts, let calendars):
+            "\(shifts) shifts from \(calendars) calendar\(calendars == 1 ? "" : "s")"
+        case .partial(let shifts, let failed):
+            "\(shifts) shifts downloaded; \(failed) calendar\(failed == 1 ? "" : "s") could not refresh"
+        case .failed(let keptPrevious):
+            keptPrevious
+                ? "Could not refresh any calendar. Previously downloaded shifts are retained."
+                : "Could not refresh any calendar."
+        }
+    }
+
+    /// True when at least one calendar didn't download, so the link may need checking.
+    var needsAttention: Bool {
+        if case .refreshed = self { return false }
+        return true
     }
 }
 

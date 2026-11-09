@@ -9,9 +9,17 @@ import WatchConnectivity
 final class WatchSyncService: NSObject {
     static let shared = WatchSyncService()
     @ObservationIgnored private var container: ModelContainer?
-    private(set) var isPaired = false
-    private(set) var isWatchAppInstalled = false
-    private(set) var isReachable = false
+    /// Where the paired watch stands, from the phone's point of view.
+    enum Connection: Equatable {
+        case notPaired
+        case appNotInstalled
+        /// Installed but out of reach right now; updates arrive when it's nearby.
+        case away
+        case connected
+
+        var isAppInstalled: Bool { self == .away || self == .connected }
+    }
+    private(set) var connection: Connection = .notPaired
     private(set) var lastSynced: Date?
 
     func activate(container: ModelContainer) {
@@ -35,10 +43,9 @@ final class WatchSyncService: NSObject {
 
     private func refreshStatus() {
         let session = WCSession.default
-        let active = session.activationState == .activated
-        isPaired = active && session.isPaired
-        isWatchAppInstalled = active && session.isWatchAppInstalled
-        isReachable = active && session.isReachable
+        guard session.activationState == .activated, session.isPaired else { connection = .notPaired; return }
+        guard session.isWatchAppInstalled else { connection = .appNotInstalled; return }
+        connection = session.isReachable ? .connected : .away
     }
 
     private static func option(_ key: String, default value: Bool = true) -> Bool {

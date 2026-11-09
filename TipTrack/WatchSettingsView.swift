@@ -8,9 +8,12 @@ struct WatchSettingsView: View {
     @AppStorage(FeatureKeys.watchShowLiveTimer) private var showLiveTimer = false
 
     private var status: (text: String, color: Color) {
-        if !watch.isPaired { return ("No Apple Watch paired", .secondary) }
-        if !watch.isWatchAppInstalled { return ("TipTrack3r isn't installed on your watch", .orange) }
-        return watch.isReachable ? ("Connected", .green) : ("Installed · syncs when nearby", .secondary)
+        switch watch.connection {
+        case .notPaired: ("No Apple Watch paired", .secondary)
+        case .appNotInstalled: ("TipTrack3r isn't installed on your watch", .orange)
+        case .away: ("Installed · syncs when nearby", .secondary)
+        case .connected: ("Connected", .green)
+        }
     }
 
     var body: some View {
@@ -23,11 +26,11 @@ struct WatchSettingsView: View {
                     LabeledContent("Last Synced", value: lastSynced.formatted(date: .omitted, time: .shortened))
                 }
                 Button("Sync Now") { watch.publish() }
-                    .disabled(!watch.isWatchAppInstalled)
+                    .disabled(!watch.connection.isAppInstalled)
             } header: {
                 Text("Status")
             } footer: {
-                if watch.isPaired && !watch.isWatchAppInstalled {
+                if watch.connection == .appNotInstalled {
                     Text("Install TipTrack3r from the Watch app on your iPhone, under Available Apps.")
                 }
             }
