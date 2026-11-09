@@ -394,11 +394,8 @@ struct LogTipsWithSiriIntent: AppIntent {
             : "on \(shiftDate.formatted(date: .abbreviated, time: .omitted))"
         let at = jobEntity.map { " at \($0.name)" } ?? ""
         let summary = "\(parts.joined(separator: ", "))\(at) \(day)"
-        if #available(iOS 18.0, *) {
-            try await requestConfirmation(actionName: .add, dialog: "Log \(summary)?")
-        } else {
-            try await requestConfirmation(result: .result(dialog: "Log \(summary)?"), confirmationActionName: .add)
-        }
+        // Always confirm before saving: Siri may have misheard an amount or the job.
+        try await requestConfirmation(actionName: .add, dialog: "Log \(summary)?")
 
         let total = try await TipTrackIntentStore.logShift(jobID: jobEntity?.id, date: shiftDate,
             credit: credit, cash: cash, tipOut: out, hours: hoursWorked, hourlyRate: hourlyRate)
