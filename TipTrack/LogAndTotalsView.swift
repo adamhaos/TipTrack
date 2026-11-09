@@ -89,8 +89,8 @@ struct LogAndTotalsView: View {
     @State private var selectedMonth = Calendar.current.dateInterval(of: .month, for: Date())?.start ?? Date()
     @State private var selectedWeekStart = Calendar.preferredWeek.dateInterval(of: .weekOfYear, for: Date())?.start ?? Date()
 
-    @State private var lastSavedShift: Shift? = nil
-    @State private var showUndoToast: Bool = false
+    /// The shift just saved while its Undo toast is showing; nil hides the toast.
+    @State private var undoableShift: Shift?
     @State private var undoTask: Task<Void, Never>? = nil
     @State private var validationMessage: String?
     @State private var pendingReceiptImage: UIImage?
@@ -865,7 +865,7 @@ struct LogAndTotalsView: View {
             .allowsHitTesting(!isFormExpanded)
             .accessibilityHidden(isFormExpanded)
             .overlay(alignment: .bottom) {
-                if showUndoToast && !isFormExpanded {
+                if undoableShift != nil && !isFormExpanded {
                     undoToastView
                         // On a wide iPad Log Shift sits at the bottom; keep the toast above it.
                         .padding(.bottom, isWideLayout && showLogShift ? 76 : 0)
@@ -1539,7 +1539,6 @@ struct LogAndTotalsView: View {
 
             UINotificationFeedbackGenerator().notificationOccurred(.success)
 
-            lastSavedShift = newShift
             creditInput = ""
             cashInput = ""
             barTipOutInput = ""
@@ -1557,14 +1556,14 @@ struct LogAndTotalsView: View {
                 isFormExpanded = false
                 isShowingReceiptScanner = false
                 formSheetDragOffset = 0
-                showUndoToast = true
+                undoableShift = newShift
             }
 
             undoTask?.cancel()
             undoTask = Task {
                 try? await Task.sleep(nanoseconds: 5_000_000_000)
                 if !Task.isCancelled {
-                    withAnimation { showUndoToast = false }
+                    withAnimation { undoableShift = nil }
                 }
             }
         }
@@ -1678,7 +1677,7 @@ struct LogAndTotalsView: View {
     }
 
     private func undoLastSave() {
-        guard let shiftToUndo = lastSavedShift else { return }
+        guard let shiftToUndo = undoableShift else { return }
         let receiptName = shiftToUndo.receiptImageName
         modelContext.delete(shiftToUndo)
         do {
@@ -1692,9 +1691,8 @@ struct LogAndTotalsView: View {
         ReceiptStore.remove(named: receiptName)
         undoTask?.cancel()
 
-        lastSavedShift = nil
         withAnimation {
-            showUndoToast = false
+            undoableShift = nil
         }
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     }

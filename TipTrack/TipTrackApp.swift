@@ -42,11 +42,25 @@ final class TipTrackAppDelegate: NSObject, UIApplicationDelegate {
     }
 }
 
+/// The result of opening the database at launch.
+nonisolated enum AppStartup: Sendable {
+    case ready(ModelContainer)
+    /// The store was left untouched; `reason` is shown to the person.
+    case failed(String)
+}
+
 @main
 struct TipTrackerApp: App {
     @UIApplicationDelegateAdaptor(TipTrackAppDelegate.self) private var appDelegate
-    let container: ModelContainer?
-    let startupError: String?
+    /// How launch went: the database opened, or it didn't and the person sees why.
+    /// One value instead of a container/error pair that could disagree.
+    let startup: AppStartup
+
+    /// Read from the background refresh task too, so it stays off the main actor.
+    nonisolated private var container: ModelContainer? {
+        if case .ready(let container) = startup { return container }
+        return nil
+    }
 
     init() {
         let schema = Schema([Shift.self, Job.self])
@@ -89,13 +103,11 @@ struct TipTrackerApp: App {
                     }
                 }
                 try demo.mainContext.save()
-                container = demo
-                startupError = nil
+                startup = .ready(demo)
                 TipTrackIntentStore.register(demo)
                 WatchSyncService.shared.activate(container: demo)
             } catch {
-                container = nil
-                startupError = "Could not prepare screenshot demo: \(error.localizedDescription)"
+                startup = .failed("Could not prepare screenshot demo: \(error.localizedDescription)")
             }
             return
         }
@@ -111,25 +123,23 @@ struct TipTrackerApp: App {
             cloudKitDatabase: enabled ? .private("iCloud.atm.TipTrack") : .none)
 
         do {
-            container = try ModelContainer(for: schema, configurations: [config])
-            if let container {
-                TipTrackIntentStore.register(container)
-                WatchSyncService.shared.activate(container: container)
-            }
-            startupError = nil
+            let container = try ModelContainer(for: schema, configurations: [config])
+            TipTrackIntentStore.register(container)
+            WatchSyncService.shared.activate(container: container)
+            startup = .ready(container)
         } catch {
-            container = nil
-            startupError = "Your saved data has been kept. TipTrack could not open its database: \(error.localizedDescription)"
+            startup = .failed("Your saved data has been kept. TipTrack could not open its database: \(error.localizedDescription)")
         }
     }
 
     var body: some Scene {
         WindowGroup {
-            if let container {
+            switch startup {
+            case .ready(let container):
                 ContentView().modelContainer(container)
-            } else {
+            case .failed(let reason):
                 ContentUnavailableView("Unable to Open TipTrack", systemImage: "externaldrive.badge.exclamationmark",
-                    description: Text(startupError ?? "Please try opening the app again."))
+                    description: Text(reason))
             }
         }
         .backgroundTask(.appRefresh("atm.TipTrack.scheduleRefresh")) {
