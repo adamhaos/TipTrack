@@ -378,7 +378,7 @@ struct SystemGuidanceSettingsView: View {
             } header: {
                 Text("Siri")
             } footer: {
-                Text("Siri can answer questions about your earnings but can't log shifts. Ask about today, this week, last month, a specific job and more.")
+                Text("Siri can answer questions about your earnings and log shifts, reading each one back for you to confirm. Ask about today, last week, a specific day, Thursdays, a specific job and more.")
             }
 
             Section {

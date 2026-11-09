@@ -343,7 +343,7 @@ struct AskTipTrackIntent: AppIntent {
 
 struct LogTipsWithSiriIntent: AppIntent {
     static let title: LocalizedStringResource = "Log a Shift"
-    static let description = IntentDescription("Logs a worked shift in Tip Tracker with its credit card tips, cash tips, tip-out, and optional hours. Siri reads the entry back and asks for confirmation before saving.")
+    static let description = IntentDescription("Logs a worked shift in Tip Tracker with its credit card tips, cash tips, tip-out, and optional hours. Reads the entry back and asks for confirmation before saving.")
     static let authenticationPolicy: IntentAuthenticationPolicy = .requiresLocalDeviceAuthentication
     static let openAppWhenRun = false
 
@@ -474,7 +474,7 @@ struct LogShiftIntent: AppIntent {
     static let title: LocalizedStringResource = "Log a Shift"
     static let isDiscoverable = false
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        .result(dialog: "Siri is information-only in Tip Tracker. Log shifts in the app.")
+        .result(dialog: "Use Log a Shift with your tip amounts, or log the shift in Tip Tracker.")
     }
 }
 
@@ -503,7 +503,7 @@ struct StartLiveShiftIntent: AppIntent {
     static let isDiscoverable = false
     @Parameter(title: "Job") var job: TipTrackJobEntity?
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        .result(dialog: "Siri is information-only in Tip Tracker. Start your shift timer in the app.")
+        .result(dialog: "Start your shift timer in Tip Tracker.")
     }
 }
 
@@ -512,7 +512,7 @@ struct EndLiveShiftIntent: AppIntent {
     static let isDiscoverable = false
     @Parameter(title: "Job") var job: TipTrackJobEntity?
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        .result(dialog: "Siri is information-only in Tip Tracker. End your shift timer in the app.")
+        .result(dialog: "End your shift timer in Tip Tracker.")
     }
 }
 
