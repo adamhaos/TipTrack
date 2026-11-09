@@ -394,7 +394,7 @@ struct LogTipsWithSiriIntent: AppIntent {
             : "on \(shiftDate.formatted(date: .abbreviated, time: .omitted))"
         let at = jobEntity.map { " at \($0.name)" } ?? ""
         let summary = "\(parts.joined(separator: ", "))\(at) \(day)"
-        if #available(iOS 18, *) {
+        if #available(iOS 18.0, *) {
             try await requestConfirmation(actionName: .add, dialog: "Log \(summary)?")
         } else {
             try await requestConfirmation(result: .result(dialog: "Log \(summary)?"), confirmationActionName: .add)
