@@ -401,6 +401,9 @@ struct TipTrackShortcuts: AppShortcutsProvider {
 // is set, because Xcode 27.2 doesn't have these APIs. The intents keep working on 27.0
 // either way; the tool conformance only applies on iOS 27.3 and later. This is the
 // conformance that @AppIntent(.tool) generates, written out so the flag can gate it.
+// The earnings-questions app skill in Skills.skillsbundle is excluded from the target
+// for the same reason (Xcode 27.2 copies it loose). With Xcode 27.3, remove that
+// exception in the TipTrack target's file membership so the bundle ships.
 #if SIRI_AI_PREVIEW
 @available(iOS 27.3, *) extension AskTipTrackIntent: ToolIntent {}
 @available(iOS 27.3, *) extension AskTipInsightsIntent: ToolIntent {}
