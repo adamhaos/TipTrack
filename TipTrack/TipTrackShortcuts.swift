@@ -36,8 +36,12 @@ struct TipTrackJobEntity: AppEntity {
     static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
 
     let id: UUID
+    #if SIRI_AI_PREVIEW
     @Property(title: "Name", description: "The name of a workplace or job where the person logs tipped shifts, such as a restaurant or bar.")
     var name: String
+    #else
+    @Property(title: "Name") var name: String
+    #endif
 
     init(id: UUID, name: String) {
         self.id = id
@@ -199,7 +203,6 @@ enum TipTrackIntentStore {
 
 }
 
-@AppIntent(.tool)
 struct AskTipInsightsIntent: AppIntent {
     static let title: LocalizedStringResource = "Ask About Best Shifts"
     static let description = IntentDescription("Ask about your best-paying job, average earnings per shift, or best shift. Defaults to this month across all jobs.")
@@ -247,7 +250,6 @@ struct AskTipInsightsIntent: AppIntent {
     }
 }
 
-@AppIntent(.tool)
 struct AskTipTrackIntent: AppIntent {
     static let title: LocalizedStringResource = "Ask About Tips"
     static let description = IntentDescription("Get earnings and timed-shift hourly averages across all jobs for your chosen period. Prompts for the period if it cannot be determined.")
@@ -331,7 +333,6 @@ struct LogShiftIntent: AppIntent {
     }
 }
 
-@AppIntent(.tool)
 struct ViewTipHistoryIntent: AppIntent {
     static let title: LocalizedStringResource = "View Tip History"
     static let description = IntentDescription("Opens Tip Tracker to the list of past logged shifts.")
@@ -342,7 +343,6 @@ struct ViewTipHistoryIntent: AppIntent {
     }
 }
 
-@AppIntent(.tool)
 struct OpenShiftCalendarIntent: AppIntent {
     static let title: LocalizedStringResource = "Open Shift Calendar"
     static let description = IntentDescription("Opens Tip Tracker to the calendar of logged and scheduled shifts.")
@@ -396,6 +396,18 @@ struct TipTrackShortcuts: AppShortcutsProvider {
     }
 }
 
+// Siri AI Developer Preview (iOS 27.3 SDK). Turns the information-only intents into
+// tools Siri AI can call from natural requests. Off until the SIRI_AI_PREVIEW Swift flag
+// is set, because Xcode 27.2 doesn't have these APIs. The intents keep working on 27.0
+// either way; the tool conformance only applies on iOS 27.3 and later. This is the
+// conformance that @AppIntent(.tool) generates, written out so the flag can gate it.
+#if SIRI_AI_PREVIEW
+@available(iOS 27.3, *) extension AskTipTrackIntent: ToolIntent {}
+@available(iOS 27.3, *) extension AskTipInsightsIntent: ToolIntent {}
+@available(iOS 27.3, *) extension ViewTipHistoryIntent: ToolIntent {}
+@available(iOS 27.3, *) extension OpenShiftCalendarIntent: ToolIntent {}
+#endif
+
 /// Siri result card for "Ask About Tips". Static content only: Siri renders it ahead of display.
 struct TipTrackEarningsCard: View {
     let period: String
@@ -406,23 +418,44 @@ struct TipTrackEarningsCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(job.map { "\($0) · \(period)" } ?? period.capitalized)
+            Text(heading)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            Text(total, format: .currency(code: "USD"))
-                .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                .foregroundStyle(.green)
-            HStack(spacing: 16) {
-                Label("\(shifts) \(shifts == 1 ? "shift" : "shifts")", systemImage: "calendar")
-                if let hourly {
-                    Label("\(hourly.formatted(.currency(code: "USD")))/hr", systemImage: "clock")
-                }
+            Label {
+                Text(total, format: .currency(code: "USD"))
+                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
+            } icon: {
+                Image(systemName: "dollarsign.circle.fill").foregroundStyle(.green)
+            }
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 16) { details }
+                VStack(alignment: .leading, spacing: 4) { details }
             }
             .font(.subheadline)
             .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spokenSummary)
+    }
+
+    private var heading: String {
+        guard let job else { return period.capitalized }
+        return "\(job), \(period)"
+    }
+
+    @ViewBuilder private var details: some View {
+        Label("^[\(shifts) shift](inflect: true)", systemImage: "calendar")
+        if let hourly {
+            Label("\(hourly.formatted(.currency(code: "USD"))) per hour", systemImage: "clock")
+        }
+    }
+
+    private var spokenSummary: String {
+        var parts = ["\(heading): \(total.formatted(.currency(code: "USD")))",
+                     shifts == 1 ? "1 shift" : "\(shifts) shifts"]
+        if let hourly { parts.append("\(hourly.formatted(.currency(code: "USD"))) per hour") }
+        return parts.joined(separator: ", ")
     }
 }
