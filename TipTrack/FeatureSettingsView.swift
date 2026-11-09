@@ -40,20 +40,41 @@ struct ICloudSyncSection: View {
     @State private var checkingSync = false
     @State private var saveStatus: String?
     @State private var deviceCounts: (shifts: Int, jobs: Int, scheduleLinks: Int)?
+    @State private var copiedReport = false
     private var sync: CloudSyncStatus { .shared }
+
+    private var countsText: String? {
+        deviceCounts.map { "\($0.shifts) shifts · \($0.jobs) jobs · \($0.scheduleLinks) schedule links" }
+    }
+
+    @ViewBuilder private var syncStatusRows: some View {
+        let problem = sync.standingProblem?.problem
+        let icon: (name: String, color: Color) = switch problem?.retriesAutomatically {
+        case nil: ("checkmark.icloud", .secondary)
+        case true?: ("arrow.clockwise.icloud", .orange)
+        case false?: ("exclamationmark.icloud", .red)
+        }
+        Label {
+            Text(sync.message)
+        } icon: {
+            Image(systemName: icon.name).foregroundStyle(icon.color)
+        }
+        .font(.caption)
+        if let problem {
+            Text(problem.advice).font(.caption).foregroundStyle(.secondary)
+        }
+        LabeledContent("Last upload",
+            value: sync.lastUpload?.formatted(date: .abbreviated, time: .shortened) ?? "Not yet this session").font(.caption)
+        LabeledContent("Last download",
+            value: sync.lastDownload?.formatted(date: .abbreviated, time: .shortened) ?? "Not yet this session").font(.caption)
+    }
 
     var body: some View {
         Section {
             Toggle("iCloud Synchronization", isOn: $cloudSync)
             Text(cloudStatus).font(.caption).foregroundStyle(.secondary)
             if sync.enabledAtLaunch {
-                Text(sync.activity).font(.caption)
-                if let date = sync.lastUpload {
-                    LabeledContent("Last upload", value: date.formatted(date: .abbreviated, time: .shortened)).font(.caption)
-                }
-                if let date = sync.lastDownload {
-                    LabeledContent("Last download", value: date.formatted(date: .abbreviated, time: .shortened)).font(.caption)
-                }
+                syncStatusRows
             } else {
                 Text("Sync is off for this app session.").font(.caption).foregroundStyle(.secondary)
             }
@@ -73,13 +94,17 @@ struct ICloudSyncSection: View {
                 }
             }.disabled(checkingSync)
             if let saveStatus { Text(saveStatus).font(.caption).foregroundStyle(.secondary) }
-            if let deviceCounts {
-                LabeledContent("On this device",
-                    value: "\(deviceCounts.shifts) shifts · \(deviceCounts.jobs) jobs · \(deviceCounts.scheduleLinks) schedule links")
-                    .font(.caption)
+            if let countsText {
+                LabeledContent("On this device", value: countsText).font(.caption)
+            }
+            LabeledContent("iCloud database", value: CloudSyncStatus.databaseEnvironment).font(.caption)
+            Button(copiedReport ? "Sync Report Copied" : "Copy Sync Report") {
+                UIPasteboard.general.string = sync.report(osVersion: UIDevice.current.systemVersion,
+                    device: UIDevice.current.model, counts: countsText)
+                copiedReport = true
             }
         } header: { Text("iCloud Sync") }
-        footer: { Text("Syncs your shifts, jobs (with their schedule links, colors and reminders) and app settings through your private iCloud account. Face ID, hidden earnings, Spotlight and daily reminders stay on each device. To check sync, compare the counts above on both devices.") }
+        footer: { Text("Syncs your shifts, jobs (with their schedule links, colors and reminders), app settings and daily reminder times through your private iCloud account. Face ID, hidden earnings, Spotlight, receipt photos and turning reminders on stay on each device. To check sync, compare the counts and iCloud database above on both devices.") }
         .task {
             countRecords()
             await updateCloudStatus()
