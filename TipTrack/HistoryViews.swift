@@ -236,7 +236,7 @@ struct WeeklyHistoryView: View {
             .toolbarBackground(Color(uiColor: .systemGroupedBackground), for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .saveErrorAlert($deletionError)
-            .navigationTitle("Recents")
+            .navigationTitle("Shift History")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if !embedded {
