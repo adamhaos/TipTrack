@@ -14,7 +14,7 @@ combinations make sense, use one enum. Put the user-facing wording on the enum
 | App launch | `AppStartup` | TipTrackApp.swift | `ready(container)`, `failed(reason)` |
 | Watch link (phone side) | `WatchSyncService.Connection` | WatchSyncService.swift | `notPaired`, `appNotInstalled`, `away`, `connected` |
 | Face ID attempt | `PrivacyManager.AuthAttempt` | PrivacyManager.swift | `idle`, `inProgress`, `failed(message)`. `unlocked` stays a separate Bool on purpose, so re-checking while unlocked never hides the screen. |
-| Checkout slip scan | `ReceiptScannerView.ScanPhase` | ReceiptScanner.swift | `empty`, `reading(image, scanID)`, `unreadable(image)`, `read(result)`. Only the newest `scanID` may finish. |
+| Checkout slip scan | `ReceiptScannerView.ScanPhase` | ReceiptScanner.swift | `empty`, `reading(image, scanID)`, `unreadable(image?)`, `read(result)`. Only the newest pick and the newest `scanID` may finish. |
 | CSV import note | `ImportCSVView.ImportStatus` | ImportCSVView.swift | `info`, `problem`. Problems always show in red. |
 | Schedule feed refresh, per job | `FeedRefreshStatus` | ScheduleStore.swift | `refreshed`, `partial`, `failed(keptPrevious:)` |
 | Calendar day popover | `quickActionDay: Date?` | ShiftCalendarView.swift | nil = closed, otherwise the open day |
@@ -28,7 +28,7 @@ combinations make sense, use one enum. Put the user-facing wording on the enum
   `isShowingCalendar`, `isClosingTopPanel`, `pendingTopPanelOpen`,
   `isTopPanelExpanded`. Target: one `TopPanel` value (which panel, open/closing,
   compact/expanded).
-- `AppRoute`: five `UUID?` request tokens plus `event`/`logDate`/`logJobID`.
+- `AppRoute` (lower priority): five `UUID?` request tokens plus `event`/`logDate`/`logJobID`.
   Target: one typed pending route.
 
 ## Coalescing loops (intentionally left as is)

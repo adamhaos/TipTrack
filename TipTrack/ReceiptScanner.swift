@@ -67,15 +67,16 @@ struct ReceiptScannerView: View {
     private enum ScanPhase {
         case empty
         case reading(UIImage, scanID: UUID)
-        /// The photo had no image data Vision could read.
-        case unreadable(UIImage)
+        /// The photo couldn't be opened, or had no image data Vision could read.
+        case unreadable(UIImage?)
         case read(ReceiptScanResult)
     }
 
     private var image: UIImage? {
         switch phase {
         case .empty: nil
-        case .reading(let image, _), .unreadable(let image): image
+        case .reading(let image, _): image
+        case .unreadable(let image): image
         case .read(let result): result.image
         }
     }
@@ -113,10 +114,7 @@ struct ReceiptScannerView: View {
                 .onChange(of: selectedItem) { _, item in
                     guard let item else { return }
                     Task {
-                        if let data = try? await item.loadTransferable(type: Data.self),
-                           let selected = UIImage(data: data) {
-                            scan(selected)
-                        }
+                        await loadPhoto(item)
                     }
                 }
                 .onChange(of: reportType) { _, _ in
@@ -243,9 +241,7 @@ struct ReceiptScannerView: View {
             .onChange(of: selectedItem) { _, item in
                 guard let item else { return }
                 Task {
-                    if let data = try? await item.loadTransferable(type: Data.self), let selected = UIImage(data: data) {
-                        scan(selected)
-                    }
+                    await loadPhoto(item)
                 }
             }
             .onChange(of: reportType) { _, _ in
@@ -266,6 +262,17 @@ struct ReceiptScannerView: View {
     }
 
     private static let unreadableMessage = "This photo couldn't be read. Try taking it again or choose another."
+
+    /// Loads a picked photo. A quicker, newer pick wins over one that finishes loading later.
+    private func loadPhoto(_ item: PhotosPickerItem) async {
+        let data = try? await item.loadTransferable(type: Data.self)
+        guard selectedItem == item else { return }
+        if let data, let selected = UIImage(data: data) {
+            scan(selected)
+        } else {
+            phase = .unreadable(nil)
+        }
+    }
 
     private func scan(_ selected: UIImage) {
         guard let cgImage = selected.cgImage else { phase = .unreadable(selected); return }
