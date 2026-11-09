@@ -83,7 +83,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				Skills.skillsbundle/Skills/earnings-questions/SKILL.md,
 			);
 			target = 52052F87302F3631008CDDAD /* TipTrack */;
 		};

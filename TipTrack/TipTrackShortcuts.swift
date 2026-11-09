@@ -36,12 +36,9 @@ struct TipTrackJobEntity: AppEntity {
     static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
 
     let id: UUID
-    #if SIRI_AI_PREVIEW
-    @Property(title: "Name", description: "The name of a workplace or job where the person logs tipped shifts, such as a restaurant or bar.")
-    var name: String
-    #else
+    // A Siri-facing description needs iOS 27.3 (above the deployment target) and stored
+    // property wrappers can't be availability-gated, so the name keeps the plain init.
     @Property(title: "Name") var name: String
-    #endif
 
     init(id: UUID, name: String) {
         self.id = id
@@ -397,14 +394,12 @@ struct TipTrackShortcuts: AppShortcutsProvider {
 }
 
 // Siri AI Developer Preview (iOS 27.3 SDK). Turns the information-only intents into
-// tools Siri AI can call from natural requests. Off until the SIRI_AI_PREVIEW Swift flag
-// is set, because Xcode 27.2 doesn't have these APIs. The intents keep working on 27.0
-// either way; the tool conformance only applies on iOS 27.3 and later. This is the
-// conformance that @AppIntent(.tool) generates, written out so the flag can gate it.
-// The earnings-questions app skill in Skills.skillsbundle is excluded from the target
-// for the same reason (Xcode 27.2 copies it loose). With Xcode 27.3, remove that
-// exception in the TipTrack target's file membership so the bundle ships.
-#if SIRI_AI_PREVIEW
+// tools Siri AI can call from natural requests. These compile automatically with
+// Xcode 27.3 or later (AppIntents 301.2+) and are skipped with Xcode 27.2, so either
+// Xcode builds the app. The intents keep working on iOS 27.0 either way; the tool
+// conformance only applies on iOS 27.3 and later. This is the conformance that
+// @AppIntent(.tool) generates, written out so the SDK check can gate it.
+#if SIRI_AI_PREVIEW || canImport(AppIntents, _version: 301.2)
 @available(iOS 27.3, *) extension AskTipTrackIntent: ToolIntent {}
 @available(iOS 27.3, *) extension AskTipInsightsIntent: ToolIntent {}
 @available(iOS 27.3, *) extension ViewTipHistoryIntent: ToolIntent {}
